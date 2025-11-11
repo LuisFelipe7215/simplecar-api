@@ -1,0 +1,15 @@
+spring:
+  config:
+    import: optional:classpath:.env[.properties]
+  application:
+    name: simplecar-api
+  datasource:
+    url: jdbc:mysql://localhost:3306/simplecar?useTimezone=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${ENV_MYSQL_USER}
+    password: ${ENV_MYSQL_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+server:
+  servlet:
+    context-path: /
