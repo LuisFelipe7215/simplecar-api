@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@With
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
