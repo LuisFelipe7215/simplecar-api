@@ -1,0 +1,21 @@
+package com.luisfelipe.simplecarapi.utils;
+
+import com.luisfelipe.simplecarapi.domain.Car;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CarUtils {
+
+    public static List<Car> createCarsList(){
+        Car corolla = Car.builder().id(1L).type("SUV").brand("Toyota").model("Corolla").year(2022).price(20000.00).build();
+        Car civic = Car.builder().id(2L).type("SUV").brand("Honda").model("Civic").year(2022).price(20000.00).build();
+        Car golf = Car.builder().id(3L).type("SUV").brand("Volkswagen").model("Golf").year(2022).price(20000.00).build();
+
+        return new ArrayList<>(List.of(corolla, civic, golf));
+    }
+
+    public static Car newCarToSave(){
+        return Car.builder().id(1L).type("Sedan").brand("Honda").model("Accord").year(2025).price(60000.00).build();
+    }
+}
