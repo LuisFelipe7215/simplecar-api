@@ -1,6 +1,7 @@
 package com.luisfelipe.simplecarapi.service;
 
 import com.luisfelipe.simplecarapi.domain.Car;
+import com.luisfelipe.simplecarapi.exception.NotFoundException;
 import com.luisfelipe.simplecarapi.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class CarService {
     }
 
     public Car findById(Long id){
-        return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Car not found"));
+        return repository.findById(id).orElseThrow(() -> new NotFoundException("Car not found"));
     }
 
     public Car save(Car car){
@@ -35,6 +36,6 @@ public class CarService {
     }
 
     private void assertCarExists(Long id){
-        repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Car not found"));
+        repository.findById(id).orElseThrow(() -> new NotFoundException("Car not found"));
     }
 }
