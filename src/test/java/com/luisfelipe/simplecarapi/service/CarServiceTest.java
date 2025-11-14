@@ -24,10 +24,12 @@ class CarServiceTest {
     @Mock
     private CarRepository repository;
     private List<Car> carsList;
+    @InjectMocks
+    private CarUtils carUtils;
 
     @BeforeEach
     void init(){
-        carsList = CarUtils.createCarsList();
+        carsList = carUtils.newCarsList();
     }
 
     @Order(1)
@@ -81,7 +83,7 @@ class CarServiceTest {
     @Test
     @DisplayName("Save returns a car when successful")
     void save_ReturnsCar_WhenSuccessful(){
-        Car carToSave = CarUtils.newCarToSave();
+        Car carToSave = carUtils.newCarToSave();
         BDDMockito.given(repository.save(carToSave)).willReturn(carToSave);
 
         Car savedCar = service.save(carToSave);
