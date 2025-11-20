@@ -81,8 +81,8 @@ class CarServiceTest {
 
     @Order(5)
     @Test
-    @DisplayName("Save returns a car when successful")
-    void save_ReturnsCar_WhenSuccessful(){
+    @DisplayName("Save creates a car")
+    void save_CreatesCar_WhenSuccessful(){
         Car carToSave = carUtils.newCarToSave();
         BDDMockito.given(repository.save(carToSave)).willReturn(carToSave);
 
@@ -117,7 +117,7 @@ class CarServiceTest {
     @Order(8)
     @Test
     @DisplayName("Delete removes a car when successful")
-    void Delete_RemovesCar_WhenSuccessful(){
+    void delete_RemovesCar_WhenSuccessful(){
         Car carToDelete = carsList.getFirst();
         BDDMockito.given(repository.findById(carToDelete.getId())).willReturn(Optional.of(carToDelete));
         BDDMockito.willDoNothing().given(repository).delete(carToDelete);
