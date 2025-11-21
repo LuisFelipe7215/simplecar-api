@@ -25,6 +25,7 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Import({CarService.class, CarMapperImpl.class, FileUtils.class, CarUtils.class})
 class CarControllerTest {
+    public static final String URL = "/v1/cars";
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -48,7 +49,7 @@ class CarControllerTest {
 
         String response = fileUtils.readResourceFile("car/get-cars-200.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/cars"))
+        mockMvc.perform(MockMvcRequestBuilders.get(URL))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(response));
@@ -61,7 +62,7 @@ class CarControllerTest {
         BDDMockito.given(service.findAll()).willReturn(Collections.emptyList());
         String response = fileUtils.readResourceFile("car/get-empty-cars-200.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/cars"))
+        mockMvc.perform(MockMvcRequestBuilders.get(URL))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(response));
@@ -76,7 +77,7 @@ class CarControllerTest {
         BDDMockito.given(service.findById(id)).willReturn(car);
         String response = fileUtils.readResourceFile("car/get-car-by-id-200.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/cars/{id}", id))
+        mockMvc.perform(MockMvcRequestBuilders.get(URL + "/{id}", id))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(response));
@@ -89,7 +90,7 @@ class CarControllerTest {
         Long id = 99L;
         BDDMockito.given(service.findById(id)).willThrow(new NotFoundException("Car not found"));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/cars/{id}", id))
+        mockMvc.perform(MockMvcRequestBuilders.get(URL + "/{id}", id))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
@@ -105,7 +106,7 @@ class CarControllerTest {
         String request = fileUtils.readResourceFile("car/post-request-car-200.json");
         String response = fileUtils.readResourceFile("car/post-response-car-201.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/cars")
+        mockMvc.perform(MockMvcRequestBuilders.post(URL)
                         .content(request).contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -122,7 +123,7 @@ class CarControllerTest {
 
         String request = fileUtils.readResourceFile("car/put-request-car-204.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/v1/cars")
+        mockMvc.perform(MockMvcRequestBuilders.put(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
                 .andDo(MockMvcResultHandlers.print())
@@ -138,7 +139,7 @@ class CarControllerTest {
 
         String request = fileUtils.readResourceFile("car/put-request-car-404.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/v1/cars")
+        mockMvc.perform(MockMvcRequestBuilders.put(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
                 .andDo(MockMvcResultHandlers.print())
@@ -153,7 +154,7 @@ class CarControllerTest {
         Long id = carsList.getFirst().getId();
         BDDMockito.willDoNothing().given(service).deleteById(id);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/v1/cars/{id}", id))
+        mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
@@ -165,7 +166,7 @@ class CarControllerTest {
         Long id = carsList.getFirst().withId(99L).getId();
         BDDMockito.willThrow(new NotFoundException("Car not found")).given(service).deleteById(id);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/v1/cars/{id}", id))
+        mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
