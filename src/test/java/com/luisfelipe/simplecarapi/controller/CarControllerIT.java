@@ -29,7 +29,8 @@ public class CarControllerIT {
 
     @Test
     @DisplayName("GET /v1/cars returns all cars when successful")
-    @Sql(value = "/sql/init_two_cars.sql")
+    @Sql(value = "/sql/init_two_cars.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/sql/truncate_table.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @Order(1)
     void findAll_ReturnsAllCars_WhenSuccessful() {
         var typeReference = new ParameterizedTypeReference<List<CarGetResponse>>() {};
@@ -124,6 +125,35 @@ public class CarControllerIT {
         var expectedResponse = fileUtils.readResourceFile("car/put-response-car-404.json");
         var carEntity = buildHttpEntity(request);
         var responseEntity = testRestTemplate.exchange(URL, HttpMethod.PUT, carEntity, String.class);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        assertThatJson(responseEntity.getBody())
+                .whenIgnoringPaths("timestamp")
+                .isEqualTo(expectedResponse);
+    }
+
+    @Order(8)
+    @Test
+    @DisplayName("DELETE v1/car/1 removes a car when successful")
+    @Sql(value = "/sql/init_one_car.sql")
+    void delete_RemovesCar_WhenSuccessful() {
+        var responseEntity = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.DELETE, null, Void.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Order(9)
+    @Test
+    @DisplayName("DELETE v1/car/99 throws NotFoundException when car is not found")
+    @Sql(value = "/sql/init_one_car.sql")
+    void delete_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
+        var expectedResponse = fileUtils.readResourceFile("car/delete-response-car-404.json");
+        var responseEntity = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.DELETE, null, String.class, 99);
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
