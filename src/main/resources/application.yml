@@ -15,3 +15,6 @@ server:
     context-path: /
   error:
     include-stacktrace: never
+logging:
+  level:
+    org.springframework.security: debug
