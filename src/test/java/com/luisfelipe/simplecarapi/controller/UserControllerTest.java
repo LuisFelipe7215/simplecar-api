@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @Import({UserMapperImpl.class, PasswordEncoderMapper.class, PasswordEncoderConfig.class, UserUtils.class, FileUtils.class})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserControllerTest {
+    public static final String URL = "/v1/users";
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -48,7 +49,7 @@ class UserControllerTest {
         String request = fileUtils.readResourceFile("user/post-request-user-200.json");
         String response = fileUtils.readResourceFile("user/post-response-user-201.json");
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/users")
+        mockMvc.perform(MockMvcRequestBuilders.post(URL)
                         .content(request)
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -69,7 +70,7 @@ class UserControllerTest {
         String request = fileUtils.readResourceFile("user/post-request-user-409.json");
         String expectedResponse = fileUtils.readResourceFile("user/post-response-user-409.json");
 
-        String response = mockMvc.perform(MockMvcRequestBuilders.post("/v1/users")
+        String response = mockMvc.perform(MockMvcRequestBuilders.post(URL)
                         .content(request)
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON))
