@@ -17,10 +17,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, "v1/cars").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "v1/cars").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "v1/cars/*").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "v1/users").permitAll()
+                .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, "/v1/cars").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/v1/cars").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/cars/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
                         .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .build();
