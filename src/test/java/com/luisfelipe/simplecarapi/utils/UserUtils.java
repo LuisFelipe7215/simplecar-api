@@ -1,6 +1,5 @@
 package com.luisfelipe.simplecarapi.utils;
 
-import com.luisfelipe.simplecarapi.domain.Car;
 import com.luisfelipe.simplecarapi.domain.User;
 import org.springframework.stereotype.Component;
 
