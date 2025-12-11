@@ -49,7 +49,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Save throws UsernameAlreadyExistsException when username already exists.")
     void save_ThrowsUsernameAlreadyExistsException_WhenUsernameExists(){
-        User userToSave = userUtils.newUsersList().getFirst();
+        User userToSave = userList.getFirst();
         BDDMockito.given(repository.findByUsername(userToSave.getUsername())).willReturn(Optional.of(userToSave));
 
         Assertions.assertThatThrownBy(() -> service.save(userToSave))
