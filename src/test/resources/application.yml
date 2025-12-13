@@ -5,3 +5,6 @@ spring:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;
     username: sa
     password:
+admin:
+  username: super_admin
+  password: 123456

@@ -31,7 +31,9 @@ class UserControllerIT {
 
         Assertions.assertThat(responseEntity).isNotNull();
         Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        JsonAssertions.assertThatJson(responseEntity.getBody()).isEqualTo(response);
+        JsonAssertions.assertThatJson(responseEntity.getBody())
+                .whenIgnoringPaths("id")
+                .isEqualTo(response);
     }
 
     @Order(2)

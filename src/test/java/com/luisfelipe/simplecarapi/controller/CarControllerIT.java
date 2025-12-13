@@ -6,6 +6,7 @@ import com.luisfelipe.simplecarapi.utils.FileUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -23,8 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Log4j2
 public class CarControllerIT {
     public static final String URL = "/v1/cars";
-    public static final String ADMIN_USERNAME = "super_admin";
-    public static final String ADMIN_PASSWORD = "123456";
+    @Value("${admin.username}")
+    public String adminUsername;
+    @Value("${admin.password}")
+    public String adminPassword;
     @Autowired
     private TestRestTemplate testRestTemplate;
     @Autowired
@@ -96,12 +99,10 @@ public class CarControllerIT {
     @Order(5)
     @Test
     @DisplayName("POST /v1/car creates a car")
-    @Sql(value = "/sql/init_one_admin.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "/sql/clear_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void save_CreatesCar_WhenSuccessful() throws IOException {
         var request = fileUtils.readResourceFile("car/post-request-car-200.json");
         var carEntity = buildHttpEntity(request);
-        var responseEntity = testRestTemplate.withBasicAuth(ADMIN_USERNAME, ADMIN_PASSWORD)
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
                 .exchange(URL, HttpMethod.POST, carEntity, CarPostResponse.class);
 
         assertThat(responseEntity).isNotNull();
@@ -113,12 +114,10 @@ public class CarControllerIT {
     @Test
     @DisplayName("PUT /v1/car updates a car when successful")
     @Sql(value = "/sql/init_one_car.sql")
-    @Sql(value = "/sql/init_one_admin.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "/sql/clear_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_UpdateCar_WhenSuccessful() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-204.json");
         var carEntity = buildHttpEntity(request);
-        var responseEntity = testRestTemplate.withBasicAuth(ADMIN_USERNAME, ADMIN_PASSWORD)
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
                 .exchange(URL, HttpMethod.PUT, carEntity, Void.class);
 
         assertThat(responseEntity).isNotNull();
@@ -129,13 +128,11 @@ public class CarControllerIT {
     @Test
     @DisplayName("PUT /v1/car throws NotFoundException when car is not found")
     @Sql(value = "/sql/init_one_car.sql")
-    @Sql(value = "/sql/init_one_admin.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "/sql/clear_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-404.json");
         var expectedResponse = fileUtils.readResourceFile("car/put-response-car-404.json");
         var carEntity = buildHttpEntity(request);
-        var responseEntity = testRestTemplate.withBasicAuth(ADMIN_USERNAME, ADMIN_PASSWORD)
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
                 .exchange(URL, HttpMethod.PUT, carEntity, String.class);
 
         assertThat(responseEntity).isNotNull();
@@ -150,10 +147,8 @@ public class CarControllerIT {
     @Test
     @DisplayName("DELETE v1/car/1 removes a car when successful")
     @Sql(value = "/sql/init_one_car.sql")
-    @Sql(value = "/sql/init_one_admin.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "/sql/clear_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_RemovesCar_WhenSuccessful() {
-        var responseEntity = testRestTemplate.withBasicAuth(ADMIN_USERNAME, ADMIN_PASSWORD)
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
                 .exchange(URL + "/{id}", HttpMethod.DELETE, null, Void.class, 1);
 
         assertThat(responseEntity).isNotNull();
@@ -164,11 +159,9 @@ public class CarControllerIT {
     @Test
     @DisplayName("DELETE v1/car/99 throws NotFoundException when car is not found")
     @Sql(value = "/sql/init_one_car.sql")
-    @Sql(value = "/sql/init_one_admin.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "/sql/clear_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
         var expectedResponse = fileUtils.readResourceFile("car/delete-response-car-404.json");
-        var responseEntity = testRestTemplate.withBasicAuth(ADMIN_USERNAME, ADMIN_PASSWORD)
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
                 .exchange(URL + "/{id}", HttpMethod.DELETE, null, String.class, 99);
 
         assertThat(responseEntity).isNotNull();
