@@ -1,6 +1,5 @@
 package com.luisfelipe.simplecarapi.controller;
 
-import com.luisfelipe.simplecarapi.repository.UserRepository;
 import com.luisfelipe.simplecarapi.response.CarGetResponse;
 import com.luisfelipe.simplecarapi.response.CarPostResponse;
 import com.luisfelipe.simplecarapi.utils.FileUtils;
@@ -30,8 +29,6 @@ public class CarControllerIT {
     private TestRestTemplate testRestTemplate;
     @Autowired
     private FileUtils fileUtils;
-    @Autowired
-    private UserRepository repository;
 
     @Order(1)
     @Test
