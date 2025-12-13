@@ -15,6 +15,6 @@ server:
     context-path: /
   error:
     include-stacktrace: never
-logging:
-  level:
-    org.springframework.security: debug
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:123456}
