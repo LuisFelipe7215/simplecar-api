@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -21,9 +22,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Collections;
 import java.util.List;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @WebMvcTest(controllers = CarController.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Import({CarService.class, CarMapperImpl.class, FileUtils.class, CarUtils.class})
+@WithMockUser
 class CarControllerTest {
     public static final String URL = "/v1/cars";
     @Autowired
@@ -99,6 +103,7 @@ class CarControllerTest {
     @Order(5)
     @Test
     @DisplayName("POST /v1/car creates a car")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     void save_CreatesCar_WhenSuccessful() throws Exception {
         Car savedCar = carUtils.newCarToSave();
         BDDMockito.given(service.save(BDDMockito.any())).willReturn(savedCar);
@@ -107,7 +112,7 @@ class CarControllerTest {
         String response = fileUtils.readResourceFile("car/post-response-car-201.json");
 
         mockMvc.perform(MockMvcRequestBuilders.post(URL)
-                        .content(request).contentType(MediaType.APPLICATION_JSON))
+                        .content(request).contentType(MediaType.APPLICATION_JSON).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -125,7 +130,7 @@ class CarControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.put(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request))
+                        .content(request).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
@@ -141,7 +146,7 @@ class CarControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.put(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request))
+                        .content(request).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
@@ -154,7 +159,7 @@ class CarControllerTest {
         Long id = carsList.getFirst().getId();
         BDDMockito.willDoNothing().given(service).deleteById(id);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id))
+        mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
@@ -166,7 +171,7 @@ class CarControllerTest {
         Long id = carsList.getFirst().withId(99L).getId();
         BDDMockito.willThrow(new NotFoundException("Car not found")).given(service).deleteById(id);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id))
+        mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
