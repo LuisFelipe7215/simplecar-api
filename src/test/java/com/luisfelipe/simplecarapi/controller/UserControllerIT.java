@@ -50,7 +50,7 @@ class UserControllerIT {
         Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 
         JsonAssertions.assertThatJson(responseEntity.getBody())
-                .whenIgnoringPaths("timestamp", "detail")
+                .whenIgnoringPaths("timestamp", "message")
                 .isEqualTo(expectedResponse);
     }
 

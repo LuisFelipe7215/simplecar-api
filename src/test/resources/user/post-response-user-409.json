@@ -1,1 +1,1 @@
-{"type":"about:blank","title":"Data conflict","status":409,"detail":"Username is already being used.","instance":"/v1/users","timestamp":"2025-12-11T15:19:19.530244443"}
+{"status":409,"message":"Username is already being used.","timestamp":"2025-12-15T11:01:37.492388865","path":"/v1/users"}
