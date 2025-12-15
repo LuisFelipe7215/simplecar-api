@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +73,8 @@ public class CarController {
 
     @PostMapping
     @Operation(summary = "Save a new car",
-            requestBody = @RequestBody(description = "Request to save a new car",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody
+                    (description = "Request to save a new car",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = CarPostRequest.class))),
             responses = {
@@ -97,7 +97,8 @@ public class CarController {
 
     @PutMapping
     @Operation(summary = "Update a existing car",
-            requestBody = @RequestBody(description = "Request to update a existing car",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody
+                    (description = "Request to update a existing car",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = CarPutRequest.class))),
             responses = {
