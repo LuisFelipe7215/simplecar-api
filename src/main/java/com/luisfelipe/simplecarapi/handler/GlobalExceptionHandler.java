@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CustomNotFoundException> handleNotFoundException(NotFoundException e
             , HttpServletRequest request) {
         CustomNotFoundException error = new CustomNotFoundException(HttpStatus.NOT_FOUND.value(),
-                e.getMessage(),
+                e.getReason(),
                 LocalDateTime.now(),
                 request.getRequestURI()
         );
