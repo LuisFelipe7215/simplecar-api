@@ -7,7 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Schema(description = "Default response model to API errors")
+@Schema(description = "Default response model to Username already exists exception")
 @AllArgsConstructor
 @Getter
 @Setter
@@ -17,7 +17,7 @@ public class CustomUsernameAlreadyExistsException {
     @Schema(description = "Error detailed message", example = "Username already exists")
     private String message;
     @Schema(description = "Error date and time", example = "2025-12-13T10:30:00")
-    private LocalDateTime localDateTime;
+    private LocalDateTime timestamp;
     @Schema(description = "Request path", example = "/v1/users")
     private String path;
 }
