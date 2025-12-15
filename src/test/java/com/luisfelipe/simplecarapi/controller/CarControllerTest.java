@@ -96,8 +96,7 @@ class CarControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get(URL + "/{id}", id))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Order(5)
@@ -148,8 +147,7 @@ class CarControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Order(8)
@@ -173,8 +171,7 @@ class CarControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.delete(URL + "/{id}", id).with(csrf()))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.status().reason("Car not found"));
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
 }

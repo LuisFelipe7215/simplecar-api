@@ -1,1 +1,1 @@
-{"timestamp":"2025-11-21T16:37:07.787+00:00","status":404,"error":"Not Found","path":"/v1/cars/99"}
+{"status":404,"message":"Car not found","timestamp":"2025-12-15T10:53:16.472300186","path":"/v1/cars/99"}
