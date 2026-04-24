@@ -18,3 +18,5 @@ server:
 admin:
   username: ${ADMIN_USERNAME:admin}
   password: ${ADMIN_PASSWORD:123456}
+file:
+  upload-dir: ./uploads
