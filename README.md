@@ -54,7 +54,6 @@ específico para a aplicação.
 Exemplo do `.env`:
 ```properties
 # Configuração do MySQL (Docker)
-ENV_ROOT_USER=root
 ENV_ROOT_PASSWORD=root123
 
 # Configuração do Spring e do MySQL

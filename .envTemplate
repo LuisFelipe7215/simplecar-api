@@ -1,6 +1,7 @@
-ENV_ROOT_USER=
+# MySQL Configuration
 ENV_ROOT_PASSWORD=
 ENV_MYSQL_USER=
 ENV_MYSQL_PASSWORD=
+# Admin credentials configuration
 ADMIN_USERNAME=
 ADMIN_PASSWORD=
