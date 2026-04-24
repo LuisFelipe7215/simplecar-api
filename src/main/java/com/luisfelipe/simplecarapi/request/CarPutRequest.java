@@ -2,6 +2,8 @@ package com.luisfelipe.simplecarapi.request;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,5 +16,5 @@ public class CarPutRequest {
     private String brand;
     private String model;
     private Integer year;
-    private Double price;
+    private BigDecimal price;
 }

@@ -3,6 +3,8 @@ package com.luisfelipe.simplecarapi.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
@@ -25,5 +27,5 @@ public class Car {
     @Column(name = "model_year", nullable = false)
     private Integer year;
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 }

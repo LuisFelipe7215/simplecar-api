@@ -2,6 +2,8 @@ package com.luisfelipe.simplecarapi.response;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,5 +15,5 @@ public class CarGetResponse {
     private String brand;
     private String model;
     private Integer year;
-    private Double price;
+    private BigDecimal price;
 }
