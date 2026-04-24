@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -122,7 +123,7 @@ class CarControllerTest {
     @Test
     @DisplayName("PUT /v1/car updates a car when successful")
     void update_UpdateCar_WhenSuccessful() throws Exception {
-        Car carToUpdate = carsList.getFirst().withPrice(25000D);
+        Car carToUpdate = carsList.getFirst().withPrice(new BigDecimal("25000.00"));
         BDDMockito.willDoNothing().given(service).update(carToUpdate);
 
         String request = fileUtils.readResourceFile("car/put-request-car-204.json");
@@ -138,7 +139,7 @@ class CarControllerTest {
     @Test
     @DisplayName("PUT /v1/car throws NotFoundException when car is not found")
     void update_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
-        Car carToUpdate = carsList.getFirst().withPrice(25000D).withId(99L);
+        Car carToUpdate = carsList.getFirst().withPrice(new BigDecimal("25000.00")).withId(99L);
         BDDMockito.willThrow(new NotFoundException("Car not found")).given(service).update(carToUpdate);
 
         String request = fileUtils.readResourceFile("car/put-request-car-404.json");

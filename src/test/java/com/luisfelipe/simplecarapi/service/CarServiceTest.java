@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -96,7 +97,7 @@ class CarServiceTest {
     @Test
     @DisplayName("Update updates a car when successful")
     void update_UpdateCar_WhenSuccessful(){
-        Car carToUpdate = carsList.getFirst().withPrice(25000D);
+        Car carToUpdate = carsList.getFirst().withPrice(new BigDecimal("25000.00"));
         BDDMockito.given(repository.findById(carToUpdate.getId())).willReturn(Optional.of(carToUpdate));
         BDDMockito.given(repository.save(carToUpdate)).willReturn(carToUpdate);
 
@@ -107,7 +108,7 @@ class CarServiceTest {
     @Test
     @DisplayName("Update throws NotFoundException when car is not found")
     void update_ThrowsNotFoundException_WhenCarIsNotFound(){
-        Car carToUpdate = carsList.getFirst().withPrice(25000D).withId(99L);
+        Car carToUpdate = carsList.getFirst().withPrice(new BigDecimal("25000.00")).withId(99L);
         BDDMockito.given(repository.findById(carToUpdate.getId())).willReturn(Optional.empty());
 
         Assertions.assertThatException().isThrownBy(() -> service.update(carToUpdate))
