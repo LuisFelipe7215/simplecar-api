@@ -16,7 +16,7 @@ public class Photo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
-    @Column(nullable = false)
+    @Column(name = "file_name", nullable = false)
     private String fileName;
     @Column(nullable = false)
     private Boolean thumbnail;
