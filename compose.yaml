@@ -4,6 +4,7 @@ services:
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${ENV_ROOT_PASSWORD}
+      MYSQL_DATABASE: simplecar
       MYSQL_USER: ${ENV_MYSQL_USER}
       MYSQL_PASSWORD: ${ENV_MYSQL_PASSWORD}
     ports:
