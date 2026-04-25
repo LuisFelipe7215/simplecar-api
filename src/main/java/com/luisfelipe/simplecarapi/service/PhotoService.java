@@ -2,6 +2,7 @@ package com.luisfelipe.simplecarapi.service;
 
 import com.luisfelipe.simplecarapi.domain.Car;
 import com.luisfelipe.simplecarapi.domain.Photo;
+import com.luisfelipe.simplecarapi.exception.MaxPhotosExceededException;
 import com.luisfelipe.simplecarapi.exception.NotFoundException;
 import com.luisfelipe.simplecarapi.repository.CarRepository;
 import com.luisfelipe.simplecarapi.repository.PhotoRepository;
@@ -31,6 +32,10 @@ public class PhotoService {
     public Photo savePhoto(Long carId, MultipartFile file) {
         Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new NotFoundException("Car not found with id: " + carId));
+
+        if (car.getPhotos() != null && car.getPhotos().size() >= 5) {
+            throw new MaxPhotosExceededException("Maximum number of photos (5) exceeded for car with id: " + carId);
+        }
 
         String fileName = storeFile(file);
 

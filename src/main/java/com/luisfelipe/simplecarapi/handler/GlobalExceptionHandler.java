@@ -1,9 +1,6 @@
 package com.luisfelipe.simplecarapi.handler;
 
-import com.luisfelipe.simplecarapi.exception.CustomNotFoundException;
-import com.luisfelipe.simplecarapi.exception.CustomUsernameAlreadyExistsException;
-import com.luisfelipe.simplecarapi.exception.NotFoundException;
-import com.luisfelipe.simplecarapi.exception.UsernameAlreadyExistsException;
+import com.luisfelipe.simplecarapi.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +34,17 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(MaxPhotosExceededException.class)
+    public ResponseEntity<CustomMaxPhotosExceededException> handleMaxPhotosExceededException(MaxPhotosExceededException e
+            , HttpServletRequest request) {
+        CustomMaxPhotosExceededException error = new CustomMaxPhotosExceededException(HttpStatus.BAD_REQUEST.value(),
+                e.getMessage(),
+                LocalDateTime.now(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }
