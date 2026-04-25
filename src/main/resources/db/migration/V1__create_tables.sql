@@ -1,0 +1,23 @@
+CREATE TABLE car (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(255) NOT NULL,
+    brand VARCHAR(255) NOT NULL,
+    model VARCHAR(255) NOT NULL,
+    model_year INT NOT NULL,
+    price DECIMAL(38, 2) NOT NULL
+);
+
+CREATE TABLE user (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    roles VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE photo (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    thumbnail BOOLEAN NOT NULL,
+    car_id BIGINT NOT NULL,
+    CONSTRAINT fk_photo_car FOREIGN KEY (car_id) REFERENCES car(id)
+);
