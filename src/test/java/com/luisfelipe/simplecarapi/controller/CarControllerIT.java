@@ -6,7 +6,6 @@ import com.luisfelipe.simplecarapi.utils.FileUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,10 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Log4j2
 public class CarControllerIT {
     public static final String URL = "/v1/cars";
-    @Value("${admin.username}")
-    public String adminUsername;
-    @Value("${admin.password}")
-    public String adminPassword;
+    private final String adminUsername = "admin";
+    private final String adminPassword = "123456";
     @Autowired
     private TestRestTemplate testRestTemplate;
     @Autowired
