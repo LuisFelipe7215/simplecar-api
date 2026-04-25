@@ -22,6 +22,7 @@ Focando em boas práticas de desenvolvimento, documentação via swagger e teste
 - **Open Api / Swagger UI** (Documentação da API)
 - **Docker** (Containerização)
 - **Banco de dados:** [MySQL e H2 para testes]
+- **Flyway:** (Migrações de banco de dados)
 
 ## ⚙️ Como Executar o Projeto
 
@@ -43,7 +44,7 @@ A aplicação depende de um banco de dados MySQL rodando em um container no dock
 
 2. Duplique o arquivo `.envTemplate` e renomeie para `.env`.
     - **Linux / Mac:** `cp .envTemplate .env`
-    - **Windows** Copie e cole renomeando.
+    - **Windows:** Copie e cole renomeando.
 
 
 3. Preencha as variáveis no arquivo `.env` recém-criado.
@@ -61,17 +62,7 @@ ENV_MYSQL_USER=teste
 ENV_MYSQL_PASSWORD=teste123
 ```
 
-4. Além disso, terá que preencher `ADMIN_USERNAME` e `ADMIN_PASSWORD` para definir o usuário e senha do admin para fazer
-requisições `POST`, `PUT` e `DELETE`. Caso não seja preenchido, ele será definido automaticamente com os seguintes valores:
-o username será `admin` e a senha `123456`.
-
-Exemplo ainda no `.env`:
-```properties
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=teste123
-```
-
-5. Execute o comando abaixo para subir o container do MYSQL configurado no `compose.yaml`:
+4. Execute o comando abaixo para subir o container do MYSQL configurado no `compose.yaml`:
 - **Windows**:
 ```bash
 docker-compose up
@@ -91,10 +82,15 @@ docker-compose down
 docker compose down
 ```
 
-6. Com o banco online, execute a aplicação:
+5. Com o banco online, execute a aplicação:
 ```bash
 ./mvnw spring-boot:run
 ```
+
+**Nota:** As migrações do Flyway rodarão automaticamente ao iniciar a aplicação. O usuário administrador padrão
+já é criado durante essas migrações com as seguintes credenciais para fazer requisições POST, PUT e DELETE:
+- **Username:** `admin`
+- **Senha:** `123456`
 
 A API de carros estará disponível em `http://localhost:8080/v1/cars` e de usuários em `http://localhost:8080/v1/users`.
 
