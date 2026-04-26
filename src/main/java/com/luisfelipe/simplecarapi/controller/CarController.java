@@ -5,6 +5,7 @@ import com.luisfelipe.simplecarapi.mapper.CarMapper;
 import com.luisfelipe.simplecarapi.request.CarPostRequest;
 import com.luisfelipe.simplecarapi.request.CarPutRequest;
 import com.luisfelipe.simplecarapi.response.CarGetResponse;
+import com.luisfelipe.simplecarapi.response.CarListGetResponse;
 import com.luisfelipe.simplecarapi.response.CarPostResponse;
 import com.luisfelipe.simplecarapi.service.CarService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,14 +38,14 @@ public class CarController {
                     @ApiResponse(description = "Get all cars",
                             responseCode = "200",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(schema = @Schema(implementation = CarGetResponse.class))))
+                                    array = @ArraySchema(schema = @Schema(implementation = CarListGetResponse.class))))
             })
-    public ResponseEntity<List<CarGetResponse>> findAll() {
+    public ResponseEntity<List<CarListGetResponse>> findAll() {
         log.debug("Request received to find all cars");
 
         var cars = service.findAll();
 
-        var carGetResponseList = mapper.toCarGetResponseList(cars);
+        var carGetResponseList = mapper.toCarListGetResponseList(cars);
 
         return ResponseEntity.ok(carGetResponseList);
     }
