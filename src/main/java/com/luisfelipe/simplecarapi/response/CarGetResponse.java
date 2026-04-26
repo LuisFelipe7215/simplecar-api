@@ -3,6 +3,7 @@ package com.luisfelipe.simplecarapi.response;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 @AllArgsConstructor
@@ -16,4 +17,5 @@ public class CarGetResponse {
     private String model;
     private Integer year;
     private BigDecimal price;
+    private List<PhotoResponse> photos;
 }

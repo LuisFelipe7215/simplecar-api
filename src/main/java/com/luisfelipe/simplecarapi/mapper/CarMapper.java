@@ -24,6 +24,9 @@ public interface CarMapper {
     @Mapping(target = "id", ignore = true)
     Car toCar(CarPostRequest carPostRequest);
 
+    @Mapping(target = "url", expression = "java(buildPhotoUrl(photo))")
+    PhotoResponse toPhotoResponse(Photo photo);
+
     Car toCar(CarPutRequest carPutRequest);
 
     CarPostResponse toCarPostResponse(Car car);
@@ -32,17 +35,21 @@ public interface CarMapper {
 
     CarListGetResponse toCarListGetResponse(Car car);
 
+    default String buildPhotoUrl(Photo photo) {
+        if (photo == null) return null;
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/v1/cars/photos/")
+                .path(photo.getFileName())
+                .toUriString();
+    }
+
     @AfterMapping
     default void setThumbnailAndUrl(Car car, @MappingTarget CarListGetResponse target) {
         car.getPhotos().stream()
                 .filter(Photo::getThumbnail)
                 .findFirst()
                 .ifPresent(photo -> {
-                    String url = ServletUriComponentsBuilder.fromCurrentContextPath()
-                            .path("/v1/cars/photos/")
-                            .path(photo.getFileName())
-                            .toUriString();
-
+                    String url = buildPhotoUrl(photo);
                     target.setThumbnail(PhotoResponse.builder()
                             .id(photo.getId())
                             .url(url)
