@@ -1,6 +1,8 @@
 package com.luisfelipe.simplecarapi.controller;
 
 import com.luisfelipe.simplecarapi.domain.Photo;
+import com.luisfelipe.simplecarapi.mapper.PhotoMapper;
+import com.luisfelipe.simplecarapi.response.PhotoPostResponse;
 import com.luisfelipe.simplecarapi.service.PhotoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,11 +14,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/v1/cars")
 @RequiredArgsConstructor
 public class PhotoController {
-    private final PhotoService photoService;
+    private final PhotoService service;
+    private final PhotoMapper mapper;
 
     @PostMapping("/{carId}/photos")
-    public ResponseEntity<Photo> uploadPhoto(@PathVariable Long carId, @RequestParam("file") MultipartFile file) {
-        Photo savedPhoto = photoService.savePhoto(carId, file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedPhoto);
+    public ResponseEntity<PhotoPostResponse> uploadPhoto(@PathVariable Long carId, @RequestParam("file") MultipartFile file) {
+        Photo savedPhoto = service.savePhoto(carId, file);
+        PhotoPostResponse response = mapper.toPhotoPostResponse(savedPhoto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
