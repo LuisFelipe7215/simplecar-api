@@ -1,6 +1,7 @@
 package com.luisfelipe.simplecarapi.service;
 
 import com.luisfelipe.simplecarapi.domain.Car;
+import com.luisfelipe.simplecarapi.domain.Photo;
 import com.luisfelipe.simplecarapi.exception.NotFoundException;
 import com.luisfelipe.simplecarapi.repository.CarRepository;
 import com.luisfelipe.simplecarapi.utils.CarUtils;
@@ -27,6 +28,8 @@ class CarServiceTest {
     private List<Car> carsList;
     @InjectMocks
     private CarUtils carUtils;
+    @Mock
+    private PhotoService photoService;
 
     @BeforeEach
     void init(){
@@ -117,13 +120,24 @@ class CarServiceTest {
 
     @Order(8)
     @Test
-    @DisplayName("Delete removes a car when successful")
+    @DisplayName("Delete removes a car and its photos when successful")
     void delete_RemovesCar_WhenSuccessful(){
-        Car carToDelete = carsList.getFirst();
-        BDDMockito.given(repository.findById(carToDelete.getId())).willReturn(Optional.of(carToDelete));
+        Car carToDelete = carUtils.newCarToDelete();
+        Long carId = carToDelete.getId();
+        BDDMockito.given(repository.findById(carId)).willReturn(Optional.of(carToDelete));
         BDDMockito.willDoNothing().given(repository).delete(carToDelete);
 
-        Assertions.assertThatNoException().isThrownBy(() -> service.deleteById(carToDelete.getId()));
+        for (Photo photo: carToDelete.getPhotos()){
+            BDDMockito.willDoNothing().given(photoService).deleteFile(photo.getFileName());
+        }
+
+        Assertions.assertThatNoException().isThrownBy(() -> service.deleteById(carId));
+
+        BDDMockito.then(repository).should().delete(carToDelete);
+
+        for (Photo photo: carToDelete.getPhotos()){
+            BDDMockito.then(photoService).should().deleteFile(photo.getFileName());
+        }
     }
 
     @Order(9)
