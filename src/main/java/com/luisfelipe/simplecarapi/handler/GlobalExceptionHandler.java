@@ -12,18 +12,6 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<CustomUsernameAlreadyExistsException> handleUsernameAlreadyExistsException(UsernameAlreadyExistsException e
-            , HttpServletRequest request) {
-        CustomUsernameAlreadyExistsException error = new CustomUsernameAlreadyExistsException(HttpStatus.CONFLICT.value(),
-                e.getMessage(),
-                LocalDateTime.now(),
-                request.getRequestURI());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
-
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<CustomNotFoundException> handleNotFoundException(NotFoundException e
             , HttpServletRequest request) {
