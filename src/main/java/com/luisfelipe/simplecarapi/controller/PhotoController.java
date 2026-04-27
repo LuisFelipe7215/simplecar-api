@@ -3,6 +3,7 @@ package com.luisfelipe.simplecarapi.controller;
 import com.luisfelipe.simplecarapi.domain.Photo;
 import com.luisfelipe.simplecarapi.mapper.PhotoMapper;
 import com.luisfelipe.simplecarapi.response.PhotoPostResponse;
+import com.luisfelipe.simplecarapi.response.PhotoPutResponse;
 import com.luisfelipe.simplecarapi.service.PhotoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,5 +47,14 @@ public class PhotoController {
         Photo savedPhoto = service.savePhoto(carId, file);
         PhotoPostResponse response = mapper.toPhotoPostResponse(savedPhoto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/photos/{id}")
+    public ResponseEntity<PhotoPutResponse> updatePhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Photo updatedPhoto = service.updatePhoto(id, file);
+
+        PhotoPutResponse response = mapper.toPhotoPutResponse(updatedPhoto);
+
+        return ResponseEntity.ok(response);
     }
 }

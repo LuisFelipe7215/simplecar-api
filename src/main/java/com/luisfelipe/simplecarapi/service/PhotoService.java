@@ -51,6 +51,20 @@ public class PhotoService {
 
         return photoRepository.save(photo);
     }
+    
+    @Transactional
+    public Photo updatePhoto(Long id, MultipartFile file){
+        Photo photo = photoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Photo not found with id: " + id));
+        
+        deleteFile(photo.getFileName());
+
+        String newFileName = storeFile(file);
+        
+        photo.setFileName(newFileName);
+        
+        return photoRepository.save(photo);
+    }
 
     private String storeFile(MultipartFile file) {
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
