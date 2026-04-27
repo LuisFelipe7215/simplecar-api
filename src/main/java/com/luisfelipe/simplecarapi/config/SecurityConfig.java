@@ -23,7 +23,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/cars/*/photos").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/v1/cars/photos/*").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/v1/cars/photos/*").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
                         .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .build();
