@@ -45,7 +45,9 @@ public class PhotoController {
     @PostMapping("/{carId}/photos")
     public ResponseEntity<PhotoPostResponse> uploadPhoto(@PathVariable Long carId, @RequestParam("file") MultipartFile file) {
         Photo savedPhoto = service.savePhoto(carId, file);
+
         PhotoPostResponse response = mapper.toPhotoPostResponse(savedPhoto);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -56,5 +58,12 @@ public class PhotoController {
         PhotoPutResponse response = mapper.toPhotoPutResponse(updatedPhoto);
 
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/photos/{id}")
+    public ResponseEntity<Void> deletePhoto(@PathVariable Long id) {
+        service.deletePhoto(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

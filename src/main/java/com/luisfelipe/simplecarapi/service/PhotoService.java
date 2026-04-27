@@ -66,6 +66,18 @@ public class PhotoService {
         return photoRepository.save(photo);
     }
 
+    @Transactional
+    public void deletePhoto(Long id) {
+        Photo photo = photoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Photo not found with id: " + id));
+
+        deleteFile(photo.getFileName());
+
+        photoRepository.delete(photo);
+
+        log.debug("Deleted photo with id: {}", id);
+    }
+
     private String storeFile(MultipartFile file) {
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get(uploadDir, fileName);
