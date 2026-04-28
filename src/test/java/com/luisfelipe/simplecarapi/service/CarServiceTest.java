@@ -105,6 +105,7 @@ class CarServiceTest {
         BDDMockito.given(repository.save(carToUpdate)).willReturn(carToUpdate);
 
         Assertions.assertThatNoException().isThrownBy(() -> service.update(carToUpdate));
+        BDDMockito.then(repository).should().save(carToUpdate);
     }
 
     @Order(7)
