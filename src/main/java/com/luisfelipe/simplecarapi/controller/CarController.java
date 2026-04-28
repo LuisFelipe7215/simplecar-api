@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -84,7 +85,7 @@ public class CarController {
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = CarPostResponse.class)))
             })
-    public ResponseEntity<CarPostResponse> save(@RequestBody CarPostRequest carPostRequest) {
+    public ResponseEntity<CarPostResponse> save(@RequestBody @Valid CarPostRequest carPostRequest) {
         log.debug("Request received to save car: '{}'", carPostRequest);
 
         var carToSave = mapper.toCar(carPostRequest);
@@ -110,7 +111,7 @@ public class CarController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = CustomNotFoundException.class)))
             })
-    public ResponseEntity<Void> update(@RequestBody CarPutRequest carPutRequest) {
+    public ResponseEntity<Void> update(@RequestBody @Valid CarPutRequest carPutRequest) {
         log.debug("Request received to update car: '{}'", carPutRequest);
 
         var car = mapper.toCar(carPutRequest);
