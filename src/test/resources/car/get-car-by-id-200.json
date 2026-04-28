@@ -1,1 +1,1 @@
-{"id":1,"type":"SUV","brand":"Toyota","model":"Corolla","year":2022,"price":20000.0}
+{"id":1,"type":"SUV","brand":"Toyota","model":"Corolla","year":2022,"price":20000.00,"photos":[{"id":1,"url":"http://localhost/v1/cars/photos/corolla1.jpg","thumbnail":true},{"id":2,"url":"http://localhost/v1/cars/photos/corolla2.jpg","thumbnail":false}]}

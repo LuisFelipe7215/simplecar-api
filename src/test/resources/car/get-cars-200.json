@@ -1,1 +1,37 @@
-[{"id":1,"type":"SUV","brand":"Toyota","model":"Corolla","year":2022,"price":20000.0},{"id":2,"type":"SUV","brand":"Honda","model":"Civic","year":2022,"price":20000.0},{"id":3,"type":"SUV","brand":"Volkswagen","model":"Golf","year":2022,"price":20000.0}]
+[
+  {
+    "id": 1,
+    "type": "SUV",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2022,
+    "price": 20000.00,
+    "thumbnail": {
+      "id": 1,
+      "url": "http://localhost/v1/cars/photos/corolla1.jpg",
+      "thumbnail": true
+    }
+  },
+  {
+    "id": 2,
+    "type": "SUV",
+    "brand": "Honda",
+    "model": "Civic",
+    "year": 2022,
+    "price": 20000.00,
+    "thumbnail": {
+      "id": 3,
+      "url": "http://localhost/v1/cars/photos/civic.jpg",
+      "thumbnail": true
+    }
+  },
+  {
+    "id": 3,
+    "type": "SUV",
+    "brand": "Volkswagen",
+    "model": "Golf",
+    "year": 2022,
+    "price": 20000.00,
+    "thumbnail": null
+  }
+]

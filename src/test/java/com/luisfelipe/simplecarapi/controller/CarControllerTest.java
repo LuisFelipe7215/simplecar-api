@@ -90,6 +90,21 @@ class CarControllerTest {
 
     @Order(4)
     @Test
+    @DisplayName("GET /v1/cars/1 returns a car with the given id without a list of photos")
+    void findById_ReturnsCarWithoutPhotos_WhenSuccessful() throws Exception {
+        Car car = carsList.get(2);
+        Long id = car.getId();
+        BDDMockito.given(service.findById(id)).willReturn(car);
+        String response = fileUtils.readResourceFile("car/get-car-by-id-empty-photos-200.json");
+
+        mockMvc.perform(MockMvcRequestBuilders.get(URL + "/{id}", id))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(response));
+    }
+
+    @Order(5)
+    @Test
     @DisplayName("GET /v1/cars/99 throws NotFoundException 404 when car is not found")
     void findById_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
         Long id = 99L;
@@ -100,7 +115,7 @@ class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
-    @Order(5)
+    @Order(6)
     @Test
     @DisplayName("POST /v1/car creates a car")
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -119,7 +134,20 @@ class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(response));
     }
 
-    @Order(6)
+    @Order(7)
+    @Test
+    @DisplayName("POST /v1/car returns 400 when body is invalid")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void save_ReturnsBadRequest_WhenBodyIsInvalid() throws Exception {
+        String request = fileUtils.readResourceFile("car/post-request-car-400.json");
+
+        mockMvc.perform(MockMvcRequestBuilders.post(URL)
+                        .content(request).contentType(MediaType.APPLICATION_JSON).with(csrf()))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Order(8)
     @Test
     @DisplayName("PUT /v1/car updates a car when successful")
     void update_UpdateCar_WhenSuccessful() throws Exception {
@@ -135,7 +163,7 @@ class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 
-    @Order(7)
+    @Order(9)
     @Test
     @DisplayName("PUT /v1/car throws NotFoundException when car is not found")
     void update_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
@@ -151,9 +179,22 @@ class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
-    @Order(8)
+    @Order(10)
     @Test
-    @DisplayName("DELETE v1/car/1 removes a car when successful")
+    @DisplayName("PUT /v1/car returns 400 when body is invalid")
+    void update_ReturnsBadRequest_WhenBodyIsInvalid() throws Exception {
+        String request = fileUtils.readResourceFile("car/put-request-car-400.json");
+
+        mockMvc.perform(MockMvcRequestBuilders.put(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request).with(csrf()))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Order(11)
+    @Test
+    @DisplayName("DELETE v1/car/1 removes a car and its photos when successful")
     void delete_RemovesCar_WhenSuccessful() throws Exception {
         Long id = carsList.getFirst().getId();
         BDDMockito.willDoNothing().given(service).deleteById(id);
@@ -163,7 +204,7 @@ class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 
-    @Order(9)
+    @Order(12)
     @Test
     @DisplayName("DELETE v1/car/99 throws NotFoundException when car is not found")
     void delete_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {

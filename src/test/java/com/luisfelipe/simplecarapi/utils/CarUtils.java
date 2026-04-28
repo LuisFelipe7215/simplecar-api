@@ -11,18 +11,35 @@ import java.util.List;
 @Component
 public class CarUtils {
 
-    public List<Car> newCarsList(){
-        Car corolla = Car.builder().id(1L).type("SUV").brand("Toyota").model("Corolla").year(2022).price(new BigDecimal("20000.00")).build();
-        Car civic = Car.builder().id(2L).type("SUV").brand("Honda").model("Civic").year(2022).price(new BigDecimal("20000.00")).build();
-        Car golf = Car.builder().id(3L).type("SUV").brand("Volkswagen").model("Golf").year(2022).price(new BigDecimal("20000.00")).build();
+    public List<Car> newCarsList() {
+        Photo corollaPhoto1 = Photo.builder().id(1L).fileName("corolla1.jpg").thumbnail(true).build();
+        Photo corollaPhoto2 = Photo.builder().id(2L).fileName("corolla2.jpg").thumbnail(false).build();
+        Car corolla = Car.builder().id(1L).type("SUV").brand("Toyota").model("Corolla").year(2022)
+                .price(new BigDecimal("20000.00"))
+                .photos(List.of(corollaPhoto1, corollaPhoto2))
+                .build();
+        corollaPhoto1.setCar(corolla);
+        corollaPhoto2.setCar(corolla);
+
+
+        Photo civicPhoto = Photo.builder().id(3L).fileName("civic.jpg").thumbnail(true).build();
+        Car civic = Car.builder().id(2L).type("SUV").brand("Honda").model("Civic").year(2022)
+                .price(new BigDecimal("20000.00"))
+                .photos(List.of(civicPhoto))
+                .build();
+        civicPhoto.setCar(civic);
+
+        Car golf = Car.builder().id(3L).type("SUV").brand("Volkswagen").model("Golf").year(2022)
+                .price(new BigDecimal("20000.00"))
+                .photos(new ArrayList<>()).build();
         return new ArrayList<>(List.of(corolla, civic, golf));
     }
 
-    public Car newCarToSave(){
+    public Car newCarToSave() {
         return Car.builder().id(1L).type("Sedan").brand("Honda").model("Accord").year(2025).price(new BigDecimal("60000.00")).build();
     }
 
-    public Car newCarToDelete(){
+    public Car newCarToDelete() {
         Photo photo1 = Photo.builder().id(1L).fileName("photo1.jpg").thumbnail(true).build();
         Photo photo2 = Photo.builder().id(2L).fileName("photo2.jpg").thumbnail(false).build();
         Car carToDelete = Car.builder()
