@@ -1,6 +1,6 @@
 package com.luisfelipe.simplecarapi.controller;
 
-import com.luisfelipe.simplecarapi.exception.CustomNotFoundException;
+import com.luisfelipe.simplecarapi.exception.NotFoundException;
 import com.luisfelipe.simplecarapi.mapper.CarMapper;
 import com.luisfelipe.simplecarapi.request.CarPostRequest;
 import com.luisfelipe.simplecarapi.request.CarPutRequest;
@@ -61,7 +61,7 @@ public class CarController {
                     @ApiResponse(description = "Car not found",
                             responseCode = "404",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = CustomNotFoundException.class)))
+                                    schema = @Schema(implementation = NotFoundException.class)))
             })
     public ResponseEntity<CarGetResponse> findById(@PathVariable Long id) {
         log.debug("Request received to find car by id: '{}'", id);
@@ -109,7 +109,7 @@ public class CarController {
                     @ApiResponse(description = "Car not found",
                     responseCode = "404",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = CustomNotFoundException.class)))
+                    schema = @Schema(implementation = NotFoundException.class)))
             })
     public ResponseEntity<Void> update(@RequestBody @Valid CarPutRequest carPutRequest) {
         log.debug("Request received to update car: '{}'", carPutRequest);
@@ -129,7 +129,7 @@ public class CarController {
                     @ApiResponse(description = "Car not found",
                             responseCode = "404",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = CustomNotFoundException.class)))
+                                    schema = @Schema(implementation = NotFoundException.class)))
             })
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         log.debug("Request received to delete car by id: '{}'", id);
