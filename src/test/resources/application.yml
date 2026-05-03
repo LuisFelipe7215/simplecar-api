@@ -7,3 +7,7 @@ spring:
     password:
 file:
   upload-dir: ${java.io.tmpdir}/simplecar-api-test
+
+admin:
+  username: admin
+  password: 123456

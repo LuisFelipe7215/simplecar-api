@@ -1,1 +1,2 @@
-truncate table car;
+DELETE FROM car;
+ALTER TABLE car ALTER COLUMN id RESTART WITH 1;
