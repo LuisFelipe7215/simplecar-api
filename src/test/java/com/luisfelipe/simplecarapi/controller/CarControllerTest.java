@@ -51,7 +51,7 @@ class CarControllerTest {
     void findAll_ReturnsAllCars_WhenSuccessful() throws Exception {
         BDDMockito.given(service.findAll()).willReturn(carsList);
 
-        String response = fileUtils.readResourceFile("car/get-cars-200.json");
+        String response = fileUtils.readResourceFile("car/get-cars-controller-test-200.json");
 
         mockMvc.perform(MockMvcRequestBuilders.get(URL))
                 .andDo(MockMvcResultHandlers.print())
