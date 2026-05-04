@@ -13,14 +13,14 @@ import java.math.BigDecimal;
 @Setter
 @ToString
 public class CarPostRequest {
-    @NotBlank
+    @NotBlank(message = "Type cannot be null or blank")
     private String type;
-    @NotBlank
+    @NotBlank(message = "Brand cannot be null or blank")
     private String brand;
-    @NotBlank
+    @NotBlank(message = "Model cannot be null or blank")
     private String model;
-    @NotNull
+    @NotNull(message = "Year cannot be null")
     private Integer year;
-    @NotNull
+    @NotNull(message = "Type cannot be null")
     private BigDecimal price;
 }
