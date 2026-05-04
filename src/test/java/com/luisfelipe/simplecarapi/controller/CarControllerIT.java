@@ -204,8 +204,24 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-
     @Order(8)
+    @Test
+    @DisplayName("POST /v1/car returns 400 when body is invalid")
+    void save_ReturnsBadRequest_WhenBodyIsInvalid() throws Exception {
+        var request = fileUtils.readResourceFile("car/post-request-car-400.json");
+        var expectedResponse = fileUtils.readResourceFile("car/post-response-car-400.json");
+        var carEntity = buildHttpEntity(request);
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL, HttpMethod.POST, carEntity, String.class);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThatJson(responseEntity.getBody()).whenIgnoringPaths("timestamp")
+                .isEqualTo(expectedResponse);
+    }
+
+
+    @Order(9)
     @Test
     @DisplayName("PUT /v1/car updates a car when successful")
     @Sql(value = "/sql/init_one_car.sql")
@@ -219,7 +235,7 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
-    @Order(9)
+    @Order(10)
     @Test
     @DisplayName("PUT /v1/car throws NotFoundException when car is not found")
     @Sql(value = "/sql/init_one_car.sql")
@@ -238,7 +254,7 @@ public class CarControllerIT {
                 .isEqualTo(expectedResponse);
     }
 
-    @Order(10)
+    @Order(11)
     @Test
     @DisplayName("DELETE v1/car/1 removes a car when successful")
     @Sql(value = "/sql/init_one_car.sql")
@@ -250,7 +266,7 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
-    @Order(11)
+    @Order(12)
     @Test
     @DisplayName("DELETE v1/car/99 throws NotFoundException when car is not found")
     @Sql(value = "/sql/init_one_car.sql")
