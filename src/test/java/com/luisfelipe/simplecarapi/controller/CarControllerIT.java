@@ -251,9 +251,52 @@ public class CarControllerIT {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        var getResponse = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.GET, null, CarGetResponse.class, 1);
+
+        assertThat(getResponse).isNotNull();
+        assertThat(getResponse.getStatusCode()).isNotEqualTo(HttpStatus.NOT_FOUND);
+
+        CarGetResponse response = getResponse.getBody();
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getType()).isEqualTo("SUV");
+        assertThat(response.getBrand()).isEqualTo("Toyota");
+        assertThat(response.getModel()).isEqualTo("Corolla");
+        assertThat(response.getYear()).isEqualTo(2022);
+        assertThat(response.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(25000.00));
     }
 
     @Order(11)
+    @Test
+    @DisplayName("PUT /v1/car preserves photos when successful")
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void update_PreservesPhotos_WhenSuccessful() throws Exception {
+        var request = fileUtils.readResourceFile("car/put-request-car-204.json");
+        var carEntity = buildHttpEntity(request);
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL, HttpMethod.PUT, carEntity, Void.class);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        var getResponse = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.GET, null, CarGetResponse.class, 1);
+
+        assertThat(getResponse).isNotNull();
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        CarGetResponse response = getResponse.getBody();
+        assertThat(response).isNotNull();
+        assertThat(response.getPhotos()).hasSize(5);
+
+        String expectedUrl = "http://localhost:" + port + "/v1/cars/photos/corolla1.jpg";
+        assertThat(response.getPhotos().getFirst().getUrl()).isEqualTo(expectedUrl);
+    }
+
+    @Order(12)
     @Test
     @DisplayName("PUT /v1/car returns 401 when user is not authenticated")
     @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -331,6 +374,12 @@ public class CarControllerIT {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        var getResponse = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.GET, null, CarGetResponse.class, 1);
+
+        assertThat(getResponse).isNotNull();
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Order(16)

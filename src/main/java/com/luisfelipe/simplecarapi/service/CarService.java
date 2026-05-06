@@ -29,8 +29,13 @@ public class CarService {
     }
 
     public void update(Car carToUpdate){
-        assertCarExists(carToUpdate.getId());
-        repository.save(carToUpdate);
+        Car existingCar = findById(carToUpdate.getId());
+        existingCar.setType(carToUpdate.getType());
+        existingCar.setBrand(carToUpdate.getBrand());
+        existingCar.setModel(carToUpdate.getModel());
+        existingCar.setYear(carToUpdate.getYear());
+        existingCar.setPrice(carToUpdate.getPrice());
+        repository.save(existingCar);
     }
 
     @Transactional
@@ -44,9 +49,5 @@ public class CarService {
         repository.delete(carToDelete);
 
         photoFileNames.forEach(photoService::deleteFile);
-    }
-
-    private void assertCarExists(Long id){
-        repository.findById(id).orElseThrow(() -> new NotFoundException("Car not found"));
     }
 }
