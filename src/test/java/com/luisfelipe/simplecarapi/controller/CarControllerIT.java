@@ -1,5 +1,6 @@
 package com.luisfelipe.simplecarapi.controller;
 
+import com.luisfelipe.simplecarapi.repository.PhotoRepository;
 import com.luisfelipe.simplecarapi.response.CarGetResponse;
 import com.luisfelipe.simplecarapi.response.CarListGetResponse;
 import com.luisfelipe.simplecarapi.response.CarPostResponse;
@@ -18,6 +19,9 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -36,6 +40,10 @@ public class CarControllerIT {
     private TestRestTemplate testRestTemplate;
     @Autowired
     private FileUtils fileUtils;
+    @Autowired
+    private PhotoRepository photoRepository;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
     @LocalServerPort
     private int port;
 
@@ -384,6 +392,38 @@ public class CarControllerIT {
 
     @Order(16)
     @Test
+    @DisplayName("DELETE v1/car/1 removes car, photos from DB and physical files")
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void delete_RemovesCarPhotosAndFiles_WhenSuccessful() throws IOException {
+        Path uploadDirPath = Paths.get(uploadDir);
+        // remover esse if possivelmente
+        if (!Files.exists(uploadDirPath)) {
+            Files.createDirectories(uploadDirPath);
+        }
+
+        for (int i = 1; i <= 5; i++) {
+            Files.write(uploadDirPath.resolve("corolla" + i + ".jpg"), "test content".getBytes());
+        }
+
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/{id}", HttpMethod.DELETE, null, Void.class, 1);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        var getCarResponse = testRestTemplate.exchange(URL + "/{id}", HttpMethod.GET, null, String.class, 1);
+        assertThat(getCarResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        assertThat(photoRepository.findAll()).isEmpty();
+
+        for (int i = 1; i <= 5; i++) {
+            assertThat(Files.exists(uploadDirPath.resolve("corolla" + i + ".jpg"))).isFalse();
+        }
+    }
+
+
+    @Order(17)
+    @Test
     @DisplayName("DELETE /v1/car returns 401 when user is not authenticated")
     @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/sql/clean_cars.sql","/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -395,7 +435,7 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    @Order(17)
+    @Order(18)
     @Test
     @DisplayName("DELETE /v1/car/1 returns 403 when user is not admin")
     @Sql(scripts = {"/sql/init_one_car.sql","/sql/init_one_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -408,7 +448,7 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-    @Order(18)
+    @Order(19)
     @Test
     @DisplayName("DELETE v1/car/99 throws NotFoundException when car is not found")
     @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
