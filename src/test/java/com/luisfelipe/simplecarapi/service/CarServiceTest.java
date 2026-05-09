@@ -29,17 +29,17 @@ class CarServiceTest {
     @InjectMocks
     private CarUtils carUtils;
     @Mock
-    private PhotoService photoService;
+    private FileStorageService fileStorageService;
 
     @BeforeEach
-    void init(){
+    void init() {
         carsList = carUtils.newCarsList();
     }
 
     @Order(1)
     @Test
     @DisplayName("FindAll returns all cars when successful")
-    void findAll_ReturnsAllCars_WhenSuccessful(){
+    void findAll_ReturnsAllCars_WhenSuccessful() {
         BDDMockito.given(repository.findAll()).willReturn(carsList);
 
         List<Car> cars = service.findAll();
@@ -50,7 +50,7 @@ class CarServiceTest {
     @Order(2)
     @Test
     @DisplayName("FindAll returns empty list when no cars are found")
-    void findAll_ReturnsEmptyList_WhenNoCarsAreFound(){
+    void findAll_ReturnsEmptyList_WhenNoCarsAreFound() {
         BDDMockito.given(repository.findAll()).willReturn(Collections.emptyList());
 
         List<Car> cars = service.findAll();
@@ -61,7 +61,7 @@ class CarServiceTest {
     @Order(3)
     @Test
     @DisplayName("FindById returns a car when successful")
-    void findById_ReturnsCar_WhenSuccessful(){
+    void findById_ReturnsCar_WhenSuccessful() {
         Car car = carsList.getFirst();
         Long id = car.getId();
         BDDMockito.given(repository.findById(id)).willReturn(Optional.of(car));
@@ -75,7 +75,7 @@ class CarServiceTest {
     @Order(4)
     @Test
     @DisplayName("FindById throws NotFoundException when car is not found")
-    void findById_ThrowsNotFoundException_WhenCarIsNotFound(){
+    void findById_ThrowsNotFoundException_WhenCarIsNotFound() {
         Long id = 99L;
         BDDMockito.given(repository.findById(id)).willReturn(Optional.empty());
 
@@ -86,7 +86,7 @@ class CarServiceTest {
     @Order(5)
     @Test
     @DisplayName("Save creates a car")
-    void save_CreatesCar_WhenSuccessful(){
+    void save_CreatesCar_WhenSuccessful() {
         Car carToSave = carUtils.newCarToSave();
         BDDMockito.given(repository.save(carToSave)).willReturn(carToSave);
 
@@ -99,7 +99,7 @@ class CarServiceTest {
     @Order(6)
     @Test
     @DisplayName("Update updates a car when successful")
-    void update_UpdateCar_WhenSuccessful(){
+    void update_UpdateCar_WhenSuccessful() {
         Car carToUpdate = carsList.getFirst().withPrice(new BigDecimal("25000.00"));
         BDDMockito.given(repository.findById(carToUpdate.getId())).willReturn(Optional.of(carToUpdate));
         BDDMockito.given(repository.save(carToUpdate)).willReturn(carToUpdate);
@@ -111,7 +111,7 @@ class CarServiceTest {
     @Order(7)
     @Test
     @DisplayName("Update throws NotFoundException when car is not found")
-    void update_ThrowsNotFoundException_WhenCarIsNotFound(){
+    void update_ThrowsNotFoundException_WhenCarIsNotFound() {
         Car carToUpdate = carsList.getFirst().withPrice(new BigDecimal("25000.00")).withId(99L);
         BDDMockito.given(repository.findById(carToUpdate.getId())).willReturn(Optional.empty());
 
@@ -122,29 +122,29 @@ class CarServiceTest {
     @Order(8)
     @Test
     @DisplayName("Delete removes a car and its photos when successful")
-    void delete_RemovesCar_WhenSuccessful(){
+    void delete_RemovesCar_WhenSuccessful() {
         Car carToDelete = carUtils.newCarToDelete();
         Long carId = carToDelete.getId();
         BDDMockito.given(repository.findById(carId)).willReturn(Optional.of(carToDelete));
         BDDMockito.willDoNothing().given(repository).delete(carToDelete);
 
-        for (Photo photo: carToDelete.getPhotos()){
-            BDDMockito.willDoNothing().given(photoService).deleteFile(photo.getFileName());
+        for (Photo photo : carToDelete.getPhotos()) {
+            BDDMockito.willDoNothing().given(fileStorageService).deleteFile(photo.getFileName());
         }
 
         Assertions.assertThatNoException().isThrownBy(() -> service.deleteById(carId));
 
         BDDMockito.then(repository).should().delete(carToDelete);
 
-        for (Photo photo: carToDelete.getPhotos()){
-            BDDMockito.then(photoService).should().deleteFile(photo.getFileName());
+        for (Photo photo : carToDelete.getPhotos()) {
+            BDDMockito.then(fileStorageService).should().deleteFile(photo.getFileName());
         }
     }
 
     @Order(9)
     @Test
     @DisplayName("Delete throws NotFoundException when car is not found")
-    void delete_ThrowsNotFoundException_WhenCarIsNotFound(){
+    void delete_ThrowsNotFoundException_WhenCarIsNotFound() {
         Car carToDelete = carsList.getFirst().withId(99L);
         BDDMockito.given(repository.findById(carToDelete.getId())).willReturn(Optional.empty());
 
@@ -152,6 +152,4 @@ class CarServiceTest {
                 .isInstanceOf(NotFoundException.class);
     }
 
-
-    
 }

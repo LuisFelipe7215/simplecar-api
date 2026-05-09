@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CarService {
     private final CarRepository repository;
-    private final PhotoService photoService;
+    private final FileStorageService fileStorageService;
 
     public List<Car> findAll(){
         return repository.findAll();
@@ -48,6 +48,6 @@ public class CarService {
 
         repository.delete(carToDelete);
 
-        photoFileNames.forEach(photoService::deleteFile);
+        photoFileNames.forEach(fileStorageService::deleteFile);
     }
 }
