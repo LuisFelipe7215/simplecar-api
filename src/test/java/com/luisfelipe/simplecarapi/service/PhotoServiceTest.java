@@ -14,6 +14,7 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +44,7 @@ class PhotoServiceTest {
     void savePhoto_CreatesPhoto_WhenSuccessful() {
         Car car = photoUtils.getCar();
         MultipartFile mockFile = new MockMultipartFile(
-                "file", "test.jpg", "image/jpeg", "test content".getBytes()
+                "file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
 
         Photo expectedPhoto = photoUtils.getPhoto(car);
@@ -72,7 +73,7 @@ class PhotoServiceTest {
     void savePhoto_ThrowsNotFoundException_WhenCarIsNotFound() {
         BDDMockito.given(carRepository.findById(anyLong())).willReturn(Optional.empty());
         MultipartFile mockFile = new MockMultipartFile(
-                "file", "test.jpg", "image/jpeg", "test content".getBytes()
+                "file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
 
         Assertions.assertThatThrownBy(() -> photoService.savePhoto(1L, mockFile))
@@ -91,7 +92,7 @@ class PhotoServiceTest {
         Car carWithMaxPhotos = photoUtils.getCarWithMaxPhotos();
         BDDMockito.given(carRepository.findById(anyLong())).willReturn(Optional.of(carWithMaxPhotos));
         MultipartFile mockFile = new MockMultipartFile(
-                "file", "test.jpg", "image/jpeg", "test content".getBytes()
+                "file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
 
         Assertions.assertThatThrownBy(() -> photoService.savePhoto(carWithMaxPhotos.getId(), mockFile))
@@ -109,7 +110,7 @@ class PhotoServiceTest {
     void updatePhoto_UpdatesPhoto_WhenSuccessful() {
         Car car = photoUtils.getCar();
         MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "update_test.jpg", "image/jpeg", "test content".getBytes()
+                "file", "update_test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
         String updatedFilename = mockFile.getOriginalFilename();
         Photo photoToUpdate = photoUtils.getPhoto(car);
@@ -140,7 +141,7 @@ class PhotoServiceTest {
     void updatePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() {
         Car car = photoUtils.getCar();
         MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "update_test.jpg", "image/jpeg", "test content".getBytes()
+                "file", "update_test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
         Photo photoToUpdate = photoUtils.getPhoto(car).withId(99L);
         Long id = photoToUpdate.getId();
