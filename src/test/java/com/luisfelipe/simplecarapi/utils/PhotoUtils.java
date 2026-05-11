@@ -12,7 +12,7 @@ import java.util.List;
 public class PhotoUtils {
 
     public Car getCar() {
-        return Car.builder().id(3L)
+        return Car.builder().id(1L)
                 .type("SUV")
                 .brand("Volkswagen")
                 .model("Golf")
