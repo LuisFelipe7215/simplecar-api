@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -37,10 +36,6 @@ class PhotoServiceTest {
     @InjectMocks
     private PhotoUtils photoUtils;
 
-    @BeforeEach
-    void init() {
-
-    }
 
     @Order(1)
     @Test
