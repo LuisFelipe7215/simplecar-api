@@ -3,13 +3,12 @@
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Docker](https://img.shields.io/badge/Docker-28.5.2-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.7-green)
-![Swagger](https://img.shields.io/badge/Swagger-OpenAPI-blue)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 ## 📖 Sobre o Projeto
 
 Api REST CRUD de carros. O projeto foi desenvolvido com a intenção de praticar os meus conhecimentos em Spring Boot.
-Focando em boas práticas de desenvolvimento, documentação via swagger e testes unitários, sliced e de integração.
+Focando em boas práticas de desenvolvimento e testes unitários, sliced e de integração.
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -19,7 +18,6 @@ Focando em boas práticas de desenvolvimento, documentação via swagger e teste
 - **Spring Data JPA** (Persistência de dados)
 - **Map Struct** (Mapeamento de DTOs)
 - **Lombok** (Redução de boilerplate)
-- **Open Api / Swagger UI** (Documentação da API)
 - **Docker** (Containerização)
 - **Banco de dados:** [MySQL e H2 para testes]
 - **Flyway:** (Migrações de banco de dados)
@@ -94,14 +92,6 @@ já é criado durante essas migrações com as seguintes credenciais para fazer 
 
 A API de carros estará disponível em `http://localhost:8080/v1/cars` e de usuários em `http://localhost:8080/v1/users`.
 
-
-## 📄 Documentação da API (Swagger)
-
-A documentação completa dos endpoints, schemas de objetos e exceções pode ser acessada através do Swagger UI.
-
-1. Inicie a aplicação: `./mvnw spring-boot:run`
-2. Acesse no navegador: `http://localhost:8080/swagger-ui.html`
-> O arquivo JSON da especificação OpenAPI pode ser encontrado em `http://localhost:8080/v3/api-docs`
 
 ## 🧪 Executar os testes
 
