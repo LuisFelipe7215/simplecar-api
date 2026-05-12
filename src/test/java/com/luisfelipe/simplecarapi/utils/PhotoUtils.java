@@ -21,10 +21,21 @@ public class PhotoUtils {
                 .photos(new ArrayList<>()).build();
     }
 
-    public Photo getPhoto(Car car){
+    public Photo getPhoto(){
+        Car car = getCar();
         return Photo.builder()
                 .id(1L)
                 .fileName("test.jpg")
+                .car(car)
+                .thumbnail(true)
+                .build();
+    }
+
+    public Photo getPhotoToUpdate(){
+        Car car = getCar();
+        return Photo.builder()
+                .id(1L)
+                .fileName("update_test.jpg")
                 .car(car)
                 .thumbnail(true)
                 .build();

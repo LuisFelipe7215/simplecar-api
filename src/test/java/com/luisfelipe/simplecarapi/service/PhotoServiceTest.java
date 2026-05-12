@@ -47,7 +47,7 @@ class PhotoServiceTest {
                 "file", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
 
-        Photo expectedPhoto = photoUtils.getPhoto(car);
+        Photo expectedPhoto = photoUtils.getPhoto();
         String expectedFileName = expectedPhoto.getFileName();
 
         BDDMockito.given(carRepository.findById(anyLong())).willReturn(Optional.of(car));
@@ -113,7 +113,7 @@ class PhotoServiceTest {
                 "file", "update_test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
         String updatedFilename = mockFile.getOriginalFilename();
-        Photo photoToUpdate = photoUtils.getPhoto(car);
+        Photo photoToUpdate = photoUtils.getPhoto();
 
         BDDMockito.given(photoRepository.findById(photoToUpdate.getId())).willReturn(Optional.of(photoToUpdate));
         BDDMockito.willDoNothing().given(fileStorageService).deleteFile(photoToUpdate.getFileName());
@@ -139,11 +139,10 @@ class PhotoServiceTest {
     @Test
     @DisplayName("Update throws NotfoundException when photo is not found")
     void updatePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() {
-        Car car = photoUtils.getCar();
         MockMultipartFile mockFile = new MockMultipartFile(
                 "file", "update_test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
         );
-        Photo photoToUpdate = photoUtils.getPhoto(car).withId(99L);
+        Photo photoToUpdate = photoUtils.getPhoto().withId(99L);
         Long id = photoToUpdate.getId();
 
         BDDMockito.given(photoRepository.findById(id)).willReturn(Optional.empty());
@@ -161,8 +160,7 @@ class PhotoServiceTest {
     @Test
     @DisplayName("Delete removes photo by its id")
     void deletePhoto_RemovesPhoto_WhenSuccessful() {
-        Car car = photoUtils.getCar();
-        Photo photoToDelete = photoUtils.getPhoto(car).withId(1L);
+        Photo photoToDelete = photoUtils.getPhoto().withId(1L);
         Long id = photoToDelete.getId();
 
         BDDMockito.given(photoRepository.findById(id)).willReturn(Optional.of(photoToDelete));
@@ -179,8 +177,7 @@ class PhotoServiceTest {
     @Test
     @DisplayName("Delete throws NotfoundException when photo is not found")
     void deletePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() {
-        Car car = photoUtils.getCar();
-        Photo photoToDelete = photoUtils.getPhoto(car).withId(99L);
+        Photo photoToDelete = photoUtils.getPhoto().withId(99L);
         Long id = photoToDelete.getId();
 
         BDDMockito.given(photoRepository.findById(id)).willReturn(Optional.empty());
