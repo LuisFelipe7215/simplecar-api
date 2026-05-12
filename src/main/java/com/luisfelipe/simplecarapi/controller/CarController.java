@@ -1,6 +1,5 @@
 package com.luisfelipe.simplecarapi.controller;
 
-import com.luisfelipe.simplecarapi.exception.NotFoundException;
 import com.luisfelipe.simplecarapi.mapper.CarMapper;
 import com.luisfelipe.simplecarapi.request.CarPostRequest;
 import com.luisfelipe.simplecarapi.request.CarPutRequest;

@@ -1,6 +1,9 @@
 package com.luisfelipe.simplecarapi.handler;
 
-import com.luisfelipe.simplecarapi.exception.*;
+import com.luisfelipe.simplecarapi.exception.CustomMaxPhotosExceededException;
+import com.luisfelipe.simplecarapi.exception.CustomNotFoundException;
+import com.luisfelipe.simplecarapi.exception.MaxPhotosExceededException;
+import com.luisfelipe.simplecarapi.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
