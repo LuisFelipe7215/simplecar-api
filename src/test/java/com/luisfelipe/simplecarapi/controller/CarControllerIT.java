@@ -241,6 +241,7 @@ public class CarControllerIT {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
         assertThatJson(responseEntity.getBody()).whenIgnoringPaths("timestamp")
                 .isEqualTo(expectedResponse);
     }
@@ -348,6 +349,7 @@ public class CarControllerIT {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
         assertThatJson(responseEntity.getBody())
                 .whenIgnoringPaths("timestamp")
                 .isEqualTo(expectedResponse);
@@ -367,6 +369,7 @@ public class CarControllerIT {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
         assertThatJson(responseEntity.getBody()).whenIgnoringPaths("timestamp")
                 .isEqualTo(expectedResponse);
     }
@@ -460,6 +463,7 @@ public class CarControllerIT {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
         assertThatJson(responseEntity.getBody())
                 .whenIgnoringPaths("timestamp")
                 .isEqualTo(expectedResponse);
