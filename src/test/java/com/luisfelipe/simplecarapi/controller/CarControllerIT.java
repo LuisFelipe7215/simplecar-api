@@ -400,7 +400,6 @@ public class CarControllerIT {
     @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_RemovesCarPhotosAndFiles_WhenSuccessful() throws IOException {
         Path uploadDirPath = Paths.get(uploadDir);
-        // remover esse if possivelmente
         if (!Files.exists(uploadDirPath)) {
             Files.createDirectories(uploadDirPath);
         }
