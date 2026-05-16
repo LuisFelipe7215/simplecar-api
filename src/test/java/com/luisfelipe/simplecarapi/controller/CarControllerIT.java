@@ -16,6 +16,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlMergeMode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -30,6 +31,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Log4j2
+@Sql(scripts = "/sql/init_one_admin_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public class CarControllerIT {
     public static final String URL = "/v1/cars";
     @Value("${admin.username}")
@@ -201,7 +205,6 @@ public class CarControllerIT {
     @Test
     @DisplayName("POST /v1/car returns 401 when user is not authenticated")
     @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void save_ReturnsUnauthorized_WhenUserIsNotAuthenticated() throws Exception {
         var request = fileUtils.readResourceFile("car/post-request-car-200.json");
         var carEntity = buildHttpEntity(request);
@@ -216,7 +219,6 @@ public class CarControllerIT {
     @Test
     @DisplayName("POST /v1/car returns 403 when user is not admin")
     @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void save_ReturnsForbidden_WhenUserIsNotAdmin() throws Exception {
         var request = fileUtils.readResourceFile("car/post-request-car-200.json");
         var carEntity = buildHttpEntity(request);
@@ -230,8 +232,6 @@ public class CarControllerIT {
     @Order(9)
     @Test
     @DisplayName("POST /v1/car returns 400 when body is invalid")
-    @Sql(scripts = "/sql/init_one_admin_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void save_ReturnsBadRequest_WhenBodyIsInvalid() throws Exception {
         var request = fileUtils.readResourceFile("car/post-request-car-400.json");
         var expectedResponse = fileUtils.readResourceFile("car/post-response-car-400.json");
@@ -250,8 +250,8 @@ public class CarControllerIT {
     @Order(10)
     @Test
     @DisplayName("PUT /v1/car updates a car when successful")
-    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/init_one_car.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_UpdateCar_WhenSuccessful() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-204.json");
         var carEntity = buildHttpEntity(request);
@@ -280,8 +280,8 @@ public class CarControllerIT {
     @Order(11)
     @Test
     @DisplayName("PUT /v1/car preserves photos when successful")
-    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_PreservesPhotos_WhenSuccessful() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-204.json");
         var carEntity = buildHttpEntity(request);
@@ -309,7 +309,6 @@ public class CarControllerIT {
     @Test
     @DisplayName("PUT /v1/car returns 401 when user is not authenticated")
     @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_ReturnsUnauthorized_WhenUserIsNotAuthenticated() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-204.json");
         var carEntity = buildHttpEntity(request);
@@ -320,11 +319,11 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    @Order(12)
+    @Order(13)
     @Test
     @DisplayName("PUT /v1/car returns 403 when user is not admin")
     @Sql(scripts = {"/sql/init_one_car.sql","/sql/init_one_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql","/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_ReturnsForbidden_WhenUserIsNotAdmin() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-204.json");
         var carEntity = buildHttpEntity(request);
@@ -335,11 +334,11 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-    @Order(13)
+    @Order(14)
     @Test
     @DisplayName("PUT /v1/car throws NotFoundException when car is not found")
-    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/init_one_car.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-404.json");
         var expectedResponse = fileUtils.readResourceFile("car/put-response-car-404.json");
@@ -355,11 +354,9 @@ public class CarControllerIT {
                 .isEqualTo(expectedResponse);
     }
 
-    @Order(14)
+    @Order(15)
     @Test
     @DisplayName("PUT /v1/car returns 400 when body is invalid")
-    @Sql(scripts = "/sql/init_one_admin_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void update_ReturnsBadRequest_WhenBodyIsInvalid() throws Exception {
         var request = fileUtils.readResourceFile("car/put-request-car-400.json");
         var expectedResponse = fileUtils.readResourceFile("car/post-response-car-400.json");
@@ -374,11 +371,11 @@ public class CarControllerIT {
                 .isEqualTo(expectedResponse);
     }
 
-    @Order(15)
+    @Order(16)
     @Test
     @DisplayName("DELETE v1/car/1 removes a car when successful")
-    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/init_one_car.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_RemovesCar_WhenSuccessful() {
         var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
                 .exchange(URL + "/{id}", HttpMethod.DELETE, null, Void.class, 1);
@@ -393,11 +390,11 @@ public class CarControllerIT {
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    @Order(16)
+    @Order(17)
     @Test
     @DisplayName("DELETE v1/car/1 removes car, photos from DB and physical files")
-    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_RemovesCarPhotosAndFiles_WhenSuccessful() throws IOException {
         Path uploadDirPath = Paths.get(uploadDir);
         if (!Files.exists(uploadDirPath)) {
@@ -424,11 +421,11 @@ public class CarControllerIT {
     }
 
 
-    @Order(17)
+    @Order(18)
     @Test
     @DisplayName("DELETE /v1/car returns 401 when user is not authenticated")
     @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql","/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_ReturnsUnauthorized_WhenUserIsNotAuthenticated() {
         var responseEntity = testRestTemplate
                 .exchange(URL + "/{id}", HttpMethod.DELETE, null, Void.class, 1);
@@ -437,11 +434,11 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    @Order(18)
+    @Order(19)
     @Test
     @DisplayName("DELETE /v1/car/1 returns 403 when user is not admin")
     @Sql(scripts = {"/sql/init_one_car.sql","/sql/init_one_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql","/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_ReturnsForbidden_WhenUserIsNotAdmin() {
         var responseEntity = testRestTemplate.withBasicAuth("common_user", "123456")
                 .exchange(URL + "/{id}", HttpMethod.DELETE, null, Void.class, 1);
@@ -450,11 +447,11 @@ public class CarControllerIT {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-    @Order(19)
+    @Order(20)
     @Test
     @DisplayName("DELETE v1/car/99 throws NotFoundException when car is not found")
-    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_admin_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/sql/clean_cars.sql", "/sql/clean_users.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = {"/sql/init_one_car.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void delete_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
         var expectedResponse = fileUtils.readResourceFile("car/delete-response-car-404.json");
         var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
