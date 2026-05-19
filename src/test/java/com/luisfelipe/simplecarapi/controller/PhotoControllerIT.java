@@ -1,240 +1,353 @@
 package com.luisfelipe.simplecarapi.controller;
 
-import com.luisfelipe.simplecarapi.config.SecurityConfig;
-import com.luisfelipe.simplecarapi.domain.Photo;
-import com.luisfelipe.simplecarapi.exception.MaxPhotosExceededException;
-import com.luisfelipe.simplecarapi.exception.NotFoundException;
-import com.luisfelipe.simplecarapi.mapper.PhotoMapperImpl;
-import com.luisfelipe.simplecarapi.service.PhotoService;
+import com.luisfelipe.simplecarapi.response.CarGetResponse;
+import com.luisfelipe.simplecarapi.response.PhotoPostResponse;
+import com.luisfelipe.simplecarapi.response.PhotoPutResponse;
+import com.luisfelipe.simplecarapi.response.PhotoResponse;
 import com.luisfelipe.simplecarapi.utils.FileUtils;
 import com.luisfelipe.simplecarapi.utils.PhotoUtils;
+import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 import org.junit.jupiter.api.*;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlMergeMode;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
-@WebMvcTest(controllers = PhotoController.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Import({PhotoService.class, PhotoMapperImpl.class, FileUtils.class, PhotoUtils.class, SecurityConfig.class})
-@WithMockUser
-class PhotoControllerTest {
+@Sql(scripts = "/sql/init_one_admin_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/clean_users.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
+class PhotoControllerIT {
     public static final String URL = "/v1/cars";
+    @Value("${admin.username}")
+    private String adminUsername;
+    @Value("${admin.password}")
+    private String adminPassword;
     @Autowired
-    private MockMvc mockMvc;
-    @MockitoBean
-    private PhotoService photoService;
+    private TestRestTemplate testRestTemplate;
     @Autowired
     private FileUtils fileUtils;
     @Autowired
     private PhotoUtils photoUtils;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Order(1)
     @Test
+    @Sql(scripts = "/sql/init_one_car.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @DisplayName("POST /v1/cars/1/photos creates a new photo to a specific car when successful")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void savePhoto_CreatesPhoto_WhenSuccessful() throws Exception {
-        Long carId = photoUtils.getCar().getId();
+    void savePhoto_CreatesPhoto_WhenSuccessful() {
+        MockMultipartFile mockFile = photoUtils.getMockFileToSave();
 
-        Photo savedPhoto = photoUtils.getPhoto();
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "teste.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+        var requestEntity = buildMockFIleHttpEntity(mockFile);
 
-        String response = fileUtils.readResourceFile("/photo/post-response-photo-201.json");
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/{carId}/photos", HttpMethod.POST, requestEntity, PhotoPostResponse.class, 1);
 
-        BDDMockito.given(photoService.savePhoto(carId, mockFile)).willReturn(savedPhoto);
-
-        mockMvc.perform(multipart(URL + "/{carId}/photos", carId)
-                        .file(mockFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(content().json(response));
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        PhotoPostResponse response = responseEntity.getBody();
+        assertThat(response).isNotNull().hasNoNullFieldsOrProperties();
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getThumbnail()).isTrue();
+        String fileName = response.getFileName().split("_")[1];
+        assertThat(fileName).isEqualTo(mockFile.getOriginalFilename());
     }
 
     @Order(2)
     @Test
+    @Sql(scripts = "/sql/init_one_car.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "/sql/clean_cars.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @DisplayName("POST /v1/cars/99/photos throws NotFoundException 404 when car is not found")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void savePhoto_ThrowsNotFoundException_WhenCarIsNotFound() throws Exception {
-        Long carId = photoUtils.getCar().withId(99L).getId();
+    void savePhoto_ThrowsNotFoundException_WhenCarIsNotFound() throws IOException {
+        MockMultipartFile mockFile = photoUtils.getMockFileToSave();
 
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "teste.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+        var requestEntity = buildMockFIleHttpEntity(mockFile);
 
-        BDDMockito.given(photoService.savePhoto(carId, mockFile)).willThrow(new NotFoundException("Car not found"));
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/{carID}/photos", HttpMethod.POST, requestEntity, String.class, 99);
 
-        mockMvc.perform(multipart(URL + "/{carId}/photos", carId)
-                        .file(mockFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
+
+        String expectedResponse = fileUtils.readResourceFile("photo/post-response-photo-404.json");
+
+        JsonAssertions.assertThatJson(responseEntity.getBody())
+                .whenIgnoringPaths("timestamp")
+                .isEqualTo(expectedResponse);
     }
 
     @Order(3)
     @Test
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_five_photos.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @DisplayName("POST /v1/cars/1/photos throws MaxPhotosExceededException 400 when car already has 5 photos")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void savePhoto_ThrowsMaxPhotosExceededException_WhenCarHasMaxPhotos() throws Exception {
-        Long carId = photoUtils.getCarWithMaxPhotos().getId();
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "teste.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+    void savePhoto_ThrowsMaxPhotosExceededException_WhenCarHasMaxPhotos() throws IOException {
+        MockMultipartFile mockFile = photoUtils.getMockFileToSave();
 
-        BDDMockito.given(photoService.savePhoto(carId, mockFile))
-                .willThrow(new MaxPhotosExceededException("Maximum number of photos (5) exceeded"));
+        var requestEntity = buildMockFIleHttpEntity(mockFile);
 
-        mockMvc.perform(multipart(URL + "/{carId}/photos", carId)
-                        .file(mockFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/{carID}/photos", HttpMethod.POST, requestEntity, String.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+
+        String expectedResponse = fileUtils.readResourceFile("photo/post-response-photo-400.json");
+
+        JsonAssertions.assertThatJson(responseEntity.getBody())
+                .whenIgnoringPaths("timestamp")
+                .isEqualTo(expectedResponse);
     }
 
     @Order(4)
     @Test
     @DisplayName("POST /v1/car/1/photos returns forbidden 403 when user is not admin")
-    @WithMockUser
-    void savePhoto_ReturnsForbidden_WhenUserIsNotAdmin() throws Exception {
-        Long carId = photoUtils.getCar().getId();
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "teste.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+    @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void savePhoto_ReturnsForbidden_WhenUserIsNotAdmin() {
+        MockMultipartFile mockFile = photoUtils.getMockFileToSave();
 
-        mockMvc.perform(multipart(URL + "/{carId}/photos", carId)
-                        .file(mockFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isForbidden());
+        var requestEntity = buildMockFIleHttpEntity(mockFile);
+
+        var responseEntity = testRestTemplate.withBasicAuth("common_user", "123456")
+                .exchange(URL + "/{carID}/photos", HttpMethod.POST, requestEntity, String.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Order(5)
     @Test
-    @DisplayName("PUT /v1/car/photos/1 updates a photo when successful")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void updatePhoto_UpdatesPhoto_WhenSuccessful() throws Exception {
-        Photo updatedPhoto = photoUtils.getPhotoToUpdate();
-        Long photoId = updatedPhoto.getId();
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "update_test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+    @DisplayName("POST /v1/car/1/photos returns 401 when user is not authenticated")
+    @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void savePhoto_ReturnsUnauthorized_WhenUserIsNotAuthenticated() {
+        MockMultipartFile mockFile = photoUtils.getMockFileToSave();
 
-        String response = fileUtils.readResourceFile("/photo/put-response-photo-200.json");
+        var requestEntity = buildMockFIleHttpEntity(mockFile);
 
-        BDDMockito.when(photoService.updatePhoto(photoId, mockFile)).thenReturn(updatedPhoto);
+        var responseEntity = testRestTemplate
+                .exchange(URL + "/{carID}/photos", HttpMethod.POST, requestEntity, String.class, 1);
 
-        mockMvc.perform(multipart(URL + "/photos/{id}", photoId)
-                        .file(mockFile)
-                        .with(request -> {
-                            request.setMethod("PUT");
-                            return request;
-                        })
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(response));
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
 
     @Order(6)
     @Test
-    @DisplayName("PUT /v1/car/photos/99 throws NotfoundException 404 when photo is not found")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void updatePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() throws Exception {
-        Long photoId = photoUtils.getPhotoToUpdate().withId(99L).getId();
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "update_test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+    @DisplayName("PUT /v1/car/photos/1 updates a photo when successful")
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_photo.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void updatePhoto_UpdatesPhoto_WhenSuccessful() {
+        MockMultipartFile mockFileToUpdate = photoUtils.getMockFileToUpdate();
 
-        BDDMockito.when(photoService.updatePhoto(photoId, mockFile)).thenThrow(new NotFoundException("Photo not found"));
+        var requestEntity = buildMockFIleHttpEntity(mockFileToUpdate);
 
-        mockMvc.perform(multipart(URL + "/photos/{id}", photoId)
-                        .file(mockFile)
-                        .with(request -> {
-                            request.setMethod("PUT");
-                            return request;
-                        })
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/photos/{id}", HttpMethod.PUT, requestEntity, PhotoPutResponse.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        PhotoPutResponse photoPutResponse = responseEntity.getBody();
+        assertThat(photoPutResponse).isNotNull();
+
+        assertThat(photoPutResponse.getId()).isEqualTo(1L);
+        assertThat(photoPutResponse.getThumbnail()).isTrue();
+        String fileName = photoPutResponse.getFileName().split("_")[1];
+        assertThat(fileName).isEqualTo(mockFileToUpdate.getOriginalFilename());
     }
 
     @Order(7)
     @Test
-    @DisplayName("PUT /v1/car/photos/1 returns forbidden 403 when user is not admin")
-    @WithMockUser
-    void updatePhoto_ReturnsForbidden_WhenUserIsNotAdmin() throws Exception {
-        Long photoId = photoUtils.getPhotoToUpdate().getId();
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "file", "teste.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
-        );
+    @DisplayName("PUT /v1/car/photos/1 preserves photos when successful")
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_photo.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void updatePhoto_PreservesPhotos_WhenSuccessful() {
+        MockMultipartFile mockFileToUpdate = photoUtils.getMockFileToUpdate();
 
-        mockMvc.perform(multipart(URL + "/photos/{id}", photoId)
-                        .file(mockFile)
-                        .with(request -> {
-                            request.setMethod("PUT");
-                            return request;
-                        })
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andDo(print())
-                .andExpect(status().isForbidden());
+        var requestEntity = buildMockFIleHttpEntity(mockFileToUpdate);
+
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/photos/{id}", HttpMethod.PUT, requestEntity, PhotoPutResponse.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        var getResponse = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.GET, null, CarGetResponse.class, 1);
+
+        assertThat(getResponse).isNotNull();
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+
+        List<PhotoResponse> photos = getResponse.getBody().getPhotos();
+        assertThat(photos).hasSize(1);
+        String url = photos.getFirst().getUrl();
+        String extractedFileName = url.substring(url.lastIndexOf('/') + 1).split("_")[1];
+
+        String expectedFileName = "update-test.jpg";
+        assertThat(extractedFileName).isEqualTo(expectedFileName);
     }
 
     @Order(8)
     @Test
-    @DisplayName("DELETE /v1/car/photos/1 removes photo by its id")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void deletePhoto_RemovesPhoto_WhenSuccessful() throws Exception {
-        Long photoId = photoUtils.getPhotoToUpdate().getId();
+    @DisplayName("PUT /v1/car/photos/99 throws NotfoundException 404 when photo is not found")
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_photo.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void updatePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() throws IOException {
+        MockMultipartFile mockFileToUpdate = photoUtils.getMockFileToUpdate();
 
-        BDDMockito.willDoNothing().given(photoService).deletePhoto(photoId);
+        var requestEntity = buildMockFIleHttpEntity(mockFileToUpdate);
 
-        mockMvc.perform(delete(URL + "/photos/{id}", photoId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNoContent());
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/photos/{id}", HttpMethod.PUT, requestEntity, String.class, 99);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
+
+        String expectedResponse = fileUtils.readResourceFile("photo/put-response-photo-404.json");
+        JsonAssertions.assertThatJson(responseEntity.getBody())
+                .whenIgnoringPaths("timestamp")
+                .isEqualTo(expectedResponse);
     }
+
 
     @Order(9)
     @Test
+    @DisplayName("PUT /v1/car/photos/1 returns forbidden 403 when user is not admin")
+    @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void updatePhoto_ReturnsForbidden_WhenUserIsNotAdmin() {
+        MockMultipartFile mockFileToUpdate = photoUtils.getMockFileToUpdate();
+
+        var requestEntity = buildMockFIleHttpEntity(mockFileToUpdate);
+
+        var responseEntity = testRestTemplate.withBasicAuth("common_user", "123456")
+                .exchange(URL + "/photos/{id}", HttpMethod.PUT, requestEntity, String.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Order(10)
+    @Test
+    @DisplayName("PUT /v1/car/photos/1 returns 401 when user is not authenticated")
+    @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void updatePhoto_ReturnsUnauthorized_WhenUserIsNotAuthenticated() {
+        MockMultipartFile mockFileToUpdate = photoUtils.getMockFileToUpdate();
+
+        var requestEntity = buildMockFIleHttpEntity(mockFileToUpdate);
+
+        var responseEntity = testRestTemplate
+                .exchange(URL + "/photos/{id}", HttpMethod.PUT, requestEntity, String.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Order(11)
+    @Test
+    @DisplayName("DELETE /v1/car/photos/1 removes photo by its id")
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_photo.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void deletePhoto_RemovesPhoto_WhenSuccessful() throws IOException {
+        Path uploadDirPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadDirPath)) {
+            Files.createDirectories(uploadDirPath);
+        }
+
+        Files.write(uploadDirPath.resolve("corolla.jpg"), "test content".getBytes());
+
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/photos/{id}", HttpMethod.DELETE, null, Void.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(Files.exists(uploadDirPath.resolve("corolla.jpg"))).isFalse();
+
+        var getResponse = testRestTemplate
+                .exchange(URL + "/{id}", HttpMethod.GET, null, CarGetResponse.class, 1);
+
+        assertThat(getResponse).isNotNull();
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+        List<PhotoResponse> photos = getResponse.getBody().getPhotos();
+        assertThat(photos).isEmpty();
+    }
+
+
+    @Order(12)
+    @Test
     @DisplayName("DELETE /v1/car/photos/1 throws NotfoundException 404 when photo is not found")
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void deletePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() throws Exception {
-        Long photoId = photoUtils.getPhotoToUpdate().withId(99L).getId();
+    @Sql(scripts = {"/sql/init_one_car.sql", "/sql/init_one_photo.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/sql/clean_photos.sql", "/sql/clean_cars.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void deletePhoto_ThrowsNotFoundException_WhenPhotoIsNotFound() throws IOException {
+        var responseEntity = testRestTemplate.withBasicAuth(adminUsername, adminPassword)
+                .exchange(URL + "/photos/{id}", HttpMethod.DELETE, null, String.class, 99);
 
-        BDDMockito.willThrow(new NotFoundException("Photo not found")).given(photoService).deletePhoto(photoId);
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
+        System.out.println(responseEntity.getBody());
 
-        mockMvc.perform(delete(URL + "/photos/{id}", photoId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+        String expectedResponse = fileUtils.readResourceFile("photo/delete-response-photo-404.json");
+        JsonAssertions.assertThatJson(responseEntity.getBody())
+                .whenIgnoringPaths("timestamp")
+                .isEqualTo(expectedResponse);
     }
 
     @Order(10)
     @Test
     @DisplayName("DELETE /v1/car/photos/1 returns forbidden 403 when user is not admin")
-    @WithMockUser()
-    void deletePhoto_ReturnsForbidden_WhenUserIsNotAdmin() throws Exception {
-        Long photoId = photoUtils.getPhotoToUpdate().getId();
+    @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void deletePhoto_ReturnsForbidden_WhenUserIsNotAdmin() {
+        var responseEntity = testRestTemplate.withBasicAuth("common_user", "123456")
+                .exchange(URL + "/photos/{id}", HttpMethod.DELETE, null, String.class, 1);
 
-        BDDMockito.willThrow(new NotFoundException("Photo not found")).given(photoService).deletePhoto(photoId);
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
 
-        mockMvc.perform(delete(URL + "/photos/{id}", photoId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isForbidden());
+    @Order(11)
+    @Test
+    @DisplayName("DELETE /v1/car/photos/1 returns 401 when user is not authenticated")
+    @Sql(scripts = "/sql/init_one_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void deletePhoto_ReturnsUnauthorized_WhenUserIsNotAuthenticated() {
+        var responseEntity = testRestTemplate
+                .exchange(URL + "/photos/{id}", HttpMethod.DELETE, null, String.class, 1);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    private static HttpEntity<MultiValueMap<String, Resource>> buildMockFIleHttpEntity(MockMultipartFile mockFile) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Resource> body = new LinkedMultiValueMap<>();
+        body.add("file", mockFile.getResource());
+
+        return new HttpEntity<>(body, httpHeaders);
     }
 
 

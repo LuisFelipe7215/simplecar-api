@@ -1,1 +1,1 @@
-{"status":404,"message":"Car not found with id: 99","timestamp":"2026-05-16T11:02:22.474058137","path":"/v1/cars/99/photos"}
+{"status":400,"message":"Maximum number of photos (5) exceeded for car with id: 1","timestamp":"2026-05-16T11:10:48.879655303","path":"/v1/cars/1/photos"}

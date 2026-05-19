@@ -1,1 +1,1 @@
-{"id":1,"fileName":"test.jpg","thumbnail":true}
+{"status":404,"message":"Car not found with id: 99","timestamp":"2026-05-16T11:02:22.474058137","path":"/v1/cars/99/photos"}

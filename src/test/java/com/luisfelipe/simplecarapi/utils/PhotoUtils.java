@@ -2,6 +2,8 @@ package com.luisfelipe.simplecarapi.utils;
 
 import com.luisfelipe.simplecarapi.domain.Car;
 import com.luisfelipe.simplecarapi.domain.Photo;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -60,5 +62,17 @@ public class PhotoUtils {
         car.setPhotos(photos);
 
         return car;
+    }
+
+    public MockMultipartFile getMockFileToSave(){
+        return new MockMultipartFile(
+                "file", "teste.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
+        );
+    }
+
+    public MockMultipartFile getMockFileToUpdate(){
+        return new MockMultipartFile(
+                "file", "update-test.jpg", MediaType.IMAGE_JPEG_VALUE, "test content".getBytes()
+        );
     }
 }
