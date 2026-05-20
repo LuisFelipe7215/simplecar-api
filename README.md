@@ -8,7 +8,7 @@
 ## 📖 Sobre o Projeto
 
 Api REST CRUD de carros. O projeto foi desenvolvido com a intenção de praticar os meus conhecimentos em Spring Boot.
-Focando em boas práticas de desenvolvimento e testes unitários, sliced e de integração..
+Focando em boas práticas de desenvolvimento e testes unitários, sliced e de integração.
 
 ## 🚀 Principais Tecnologias Utilizadas
 
