@@ -7,8 +7,7 @@
 
 ## 📖 Sobre o Projeto
 
-Api REST CRUD de carros. O projeto foi desenvolvido com a intenção de praticar os meus conhecimentos em Spring Boot.
-Focando em boas práticas de desenvolvimento e testes unitários, sliced e de integração.
+API RESTful robusta desenvolvida para catálogo, gestão e controle de veículos. Possui segurança e controle de acesso com Spring Security, gerenciamento de upload de fotos, migração de banco de dados com Flyway e validação de qualidade através de testes automatizados.
 
 ## 🚀 Principais Tecnologias Utilizadas
 
